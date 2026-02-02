@@ -1,0 +1,426 @@
+/*Custom Styles*/
+tfoot td:first-child, tfoot td:nth-child(2){
+    display: none!important;
+}
+
+#oe_component_intake_wise .jexcel_content table tfoot td:first-child, 
+#oe_component_intake_wise .jexcel_content table tfoot td:nth-child(2),
+#oe_component_intake_wise .jexcel_content table tfoot td:nth-child(3) {
+    display: none!important;
+}
+
+.box-header.with-border {
+    border-bottom: 1px solid #dfdfdf;
+}
+
+.pdt20_pdb0 {
+    padding-top: 20px;
+    padding-bottom: 0;
+}
+
+#divSuccessBasicInfoMsg {
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.btn.btn-info {
+    background-color: #008fe3;
+    border-color: #008fe3;
+}
+
+.btn-info:hover, .btn-info:active, .btn-info.hover {
+    background-color: #337ab7;
+}
+
+.form-control {
+    font-size: 12px;
+}
+
+.form-horizontal .control-label {
+    padding-top: 0 !important;
+}
+
+.mainheading {
+    background-color: rgb(231,236,236);
+}
+.secondheading {
+    background-color: rgb(231,236,236);
+}
+
+.pinkHeading {
+    background-color: #fdc6d0 !important;
+    height: 28px !important;
+    padding-top: 7px !important;
+}
+
+
+/*.content-wrapper {
+    background-color: rgb(210 253 249);
+}*/
+
+/*.content-wrapper,*/
+/*.bgn-white {*/
+/*    padding-top:100px;*/
+/*} */
+
+.box.box-info {
+    border-top-color: #022B61;
+}
+
+.box .box-primary {
+    border-top-color: rgb(181,187,255);
+}
+
+.jexcel > thead > tr > td {
+    background-color: #fdc6d0 !important;
+    white-space: pre-wrap;
+}
+
+.jexcel > tbody > tr > td {
+    white-space: pre-wrap !important;
+}
+
+.jexcel > tfoot > tr > td {
+    background-color: #fdc6d0 !important;
+}
+
+.order-entry .box-header {
+    padding: 0;
+}
+
+.order-entry .pagination {
+    margin: 5px 0;
+}
+
+.order-entry .table {
+    margin-bottom: 0;
+}
+
+table.table {
+    /*background-color: rgb(223,228,228);*/
+}
+
+/*.order-entry .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+    padding: 3px;
+}*/
+
+#frmPin {
+    padding-left: 15px;
+    letter-spacing: 42px;
+    border: 0;
+    background-image: linear-gradient(to left, black 70%, rgba(255, 255, 255, 0) 0%);
+    background-position: bottom;
+    background-size: 50px 1px;
+    background-repeat: repeat-x;
+    background-position-x: 35px;
+    width: 220px;
+    min-width: 220px;
+}
+
+#divInner {
+    left: 0;
+    position: sticky;
+}
+
+#divOuter {
+    width: 190px;
+    overflow: hidden
+}
+
+.oeSaveEditBtn { margin: 0 10px; }
+
+.customcontrol {
+    border-radius: 0;
+    box-shadow: none;
+    display: block;
+    width: 100%;
+    height: 25px;
+    padding: 3px 2px;
+    line-height: 1.42857143;
+    border: 1px solid #ccc;
+}
+
+.customcontrol-readonly {
+    background-color: #e3e3e3;
+    border-radius: 0;
+    box-shadow: none;
+    display: block;
+    width: 100%;
+    height: 25px;
+    padding: 3px 2px;
+    line-height: 1.42857143;
+    border: 1px solid #ccc;
+}
+
+.dataTables_wrapper .no-footer {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: normal !important;
+}
+
+.dataTables_length {
+    /*padding-left: 15px;*/
+    /*padding-right: 10px;*/
+    /*padding-top: 8px;*/
+    /*padding-bottom: 10px;*/
+    padding:10px;
+}
+
+.dataTables_length label {
+    margin-bottom: 0 !important;
+    font-weight: 100;
+}
+
+.dataTables_length select {
+    border-radius: 0;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    padding: 6px 12px;
+}
+
+.dataTables_filter {
+    /*padding-left: 10px;*/
+    /*padding-right: 15px;*/
+    /*padding-top: 10px;*/
+    /*padding-bottom: 10px;*/
+    padding:10px;
+}
+
+.dataTables_filter input {
+    padding: 6px 12px;
+}
+
+.dataTables_filter label {
+    margin-bottom: 0 !important;
+    font-weight:100!important;
+}
+
+.dataTables_wrapper > table > thead > tr > th {
+    text-align: left;
+    vertical-align: top !important;
+}
+
+.dataTables_wrapper table.dataTable tr.odd { background-color: #f7f7f7; }
+.dataTables_wrapper .table-hover > tbody > tr:hover { background-color: #ededed; }
+
+.dataTables_info {
+    padding: 0 10px;
+}
+
+.dataTables_paginate {
+    padding-bottom: 0.25em;
+    padding-right: 0.5em;
+}
+
+.dataTable > thead {
+    background-color: #E0E0E0;
+    color: #022B61;
+}
+
+.pagination>li>a {
+    /*background: #e7ecec;*/
+    background-color: #eee;
+}
+
+.pagination>li>a, .pagination>li>span {
+    border-color: #fdc6d0;
+    /*border: 2px solid #99ff2a3b !important;*/
+}
+
+/*.btn {
+    padding: 5px 12px !important;
+}*/
+
+.btn-default {
+    background-color: #eee;
+    /*border-color: #fdc6d0 !important;*/
+}
+
+.btn-default:hover {
+    background-color: #ddd;
+}
+
+.pagination > li > a:focus, .pagination > li > a:hover, .pagination > li > span:focus, .pagination > li > span:hover {
+    background-color: #ddd;
+    border-color: #fdc6d0 !important;
+}
+
+b, strong {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 14px !important;
+    font-weight:600;
+}
+
+body {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 12px !important;
+}
+
+.pageNoBox {
+    border: 1px solid #337ab7;
+    border-radius: 5px !important;
+    background-color: #337ab7;
+    color: #fff;
+    float: left;
+    text-align: center;
+    left: -14px;
+    padding: 6px 12px;
+    position: relative;
+    width: 40px;
+}
+
+.box-footer {
+    border-top:1px solid #ffffff !important;
+}
+
+/*.table-bordered>thead>tr>th, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>tbody>tr>td, .table-bordered>tfoot>tr>td {
+    border : 1px solid #ffffff !important;
+}*/
+
+.skin-black .main-header>.navbar {
+    background-color: #022B61 !important;
+}
+
+.skin-black .main-header>.navbar .navbar-custom-menu .navbar-nav>li>a, .skin-black .main-header>.navbar .navbar-right>li>a {
+    border: none;
+}
+
+.skin-black .main-header>.navbar .nav>li>a {
+    color: white;
+}
+
+.skin-black .main-header>.navbar .nav>li>a:hover, .skin-black .main-header>.navbar .nav>li>a:active, .skin-black .main-header>.navbar .nav>li>a:focus, .skin-black .main-header>.navbar .nav .open>a, .skin-black .main-header>.navbar .nav .open>a:hover, .skin-black .main-header>.navbar .nav .open>a:focus, .skin-black .main-header>.navbar .nav>.active>a {
+    background: #e7ecec !important;
+    color: #656464fa !important;
+}
+
+/* Hide all steps by default: */
+.sampleRequestIndentTab {
+    display: none;
+}
+
+.box-header.with-bgColor {
+    background-color: #eee;
+    padding: 5px 10px;
+}
+
+.greyBgColor {
+    background-color: #eee;
+    font-size: 16px !important;
+    padding: 5px 10px;
+}
+
+.box-headerBoxTitle {
+	font-weight: 600;
+}
+
+.box-titleFontSize {
+    font-size: 16px !important;
+}
+
+.h1, .h2, .h3, h1, h2, h3 {
+    margin-top:10px;
+    margin-bottom:20px;
+}
+
+/*.box-header > .fa, .box-header > .glyphicon, .box-header > .ion, .box-header .box-title {
+    font-size: 16px;
+    font-weight: 600;
+}*/
+
+.navbar-nav > .user-menu .user-image {
+    width: 35px;
+    margin-top: -7px;
+    margin-left: 10px;
+    height: 35px;
+}
+
+.updateBtnInList {
+    padding-right: 2px;
+}
+
+.box-bodyPd2010 {
+    padding: 20px 10px;
+}
+
+.boxFooter_pd1025 {
+    padding: 10px 25px;
+}
+
+.pdt20_pdb0 {
+    padding-top: 20px;
+    padding-bottom: 0;
+}
+
+.uploadedFileName {
+    color: black;
+    padding: 10px 0;
+}
+
+/* .knOrangeColor {
+    color: #FF7B00;
+}
+
+.knRedColor {
+    color: #FF0000;
+}
+
+.knGreenColor {
+    color: #09B02D;
+     color: #09B02D;
+} */
+
+/* .knOrangeColor {
+    color: #EB7711;
+    
+} */
+ .knOrangeColor {
+    color: #FF7B00;
+}
+
+.knRedColor {
+    color: #fc0303ff;
+}
+
+.knGreenColor {
+    color: #009846;
+    
+} 
+
+
+
+.knBlueColor {
+    color: #0532e8;
+}
+
+
+h1.firstHeading {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.addBtnDetails {
+    margin-left: 15px;
+
+    font-weight: 600;
+}
+
+thead {
+    background-color: #E0E0E0;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+
+    /* Remove default */
+    -webkit-appearance: none;
+
+    /* Now your own custom styles */
+    width: 12px;
+    height: 12px;
+    background: url("../img/close.png") no-repeat center;
+    /*background-image: url("../img/Close-512.png");*/
+    /* Will place small red box on the right of input (positioning carries over) */
+
+}
+

@@ -1,0 +1,554 @@
+<?php $this->load->view(CNFCOMPANY . 'template/pageheader'); ?>
+    <link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/jexcel4/jsuites.css"/>
+    <link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/jexcel4/jexcel.css"/>
+    <style type="text/css">
+    </style>
+    <body class="sidebar-mini skin-black wysihtml5-supported sidebar-collapse">
+<div class="wrapper">
+    <?php $this->load->view(CNFCOMPANY . 'template/templateheader'); ?>
+    <!-- Left side column. contains the logo and sidebar -->
+    <aside class="main-sidebar">
+        <?php $this->load->view(CNFCOMPANY . 'template/templateleftmenu'); ?>
+    </aside>
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper order-entry">
+        <!-- Content Header (Page header) -->
+        <div class="col-md-12">
+            <section class="content-header">
+                <h1 class="firstHeading">SAMPLE REQUEST</h1>
+            </section>
+        </div>
+        <section class="content">
+            <!-- Default box -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-info">
+                        <div class="box-body" style="padding: 0">
+                            <?php $this->load->view('commonBasicInfoOrderEntry'); ?>
+                        </div>
+                    </div>
+                    <div class="box box-info">
+                        <div class="box-body table-responsive">
+                            <div id="jxlSampleReq" class="table table-responsive"></div>
+                        </div>
+                        <div class="box-body">
+                            <!--Content-->
+                            <form class="form-horizontal" name="frmBasicInfo" id="frmBasicInfo" method="post"
+                                  autocomplete="off">
+                                <div class="alert alert-success alert-dismissable hide" id="divSuccessBasicInfoMsg"></div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="inputEmail3" class="col-sm-4 control-label">Request Type</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control" readonly
+                                                   value="<?php echo @$ArrBasicInfo->requesttype ?>">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="inputEmail3" class="col-sm-4 control-label">Request Date &
+                                            Time</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" name="" class="form-control" id="frmBasicReqDate" readonly
+                                                   value="<?php if (empty($ArrBasicInfo->requestdt)) echo ''; else echo date('d-m-Y H:i:s', strtotime($ArrBasicInfo->requestdt)); ?>">
+                                            <div class="herr" id="ErrfrmBasicReqDate"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="inputEmail3" class="col-sm-4 control-label">CutOff Date &
+                                            Time</label>
+                                        <div class="col-sm-8">
+                                            <input type='text' class="form-control" readonly id=""
+                                                   value="<?php if (isset($ArrBasicInfo->cutoffdatetime)) echo date('d-m-Y H:i:s', strtotime($ArrBasicInfo->cutoffdatetime)) ?>"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputEmail3" class="col-sm-4 control-label">Merchant
+                                            Note</label>
+                                        <div class="col-sm-8">
+                                                <textarea id="" readonly class="form-control"
+                                                          style="height: 65px"><?php if (isset($ArrBasicInfo->merchantnote)) echo $ArrBasicInfo->merchantnote ?></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="inputEmail3" class="col-sm-4 control-label">
+                                            Authorization Status
+                                        </label>
+
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control" readonly
+                                                   value="<?php echo ($ArrBasicInfo->mgmtcurrentstatus == 2) ? 'AUTHORIZED' : 'NOT AUTHORIZED'; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputEmail3" class="col-sm-4 control-label">
+                                            Authorization Type
+                                        </label>
+                                        <div class="col-sm-8">
+                                            <input type="text" class="form-control" readonly value="<?php echo @$ArrBasicInfo->approvaltype ?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Authorized By</label>
+                                        <div class="col-sm-8">
+                                            <?php
+
+                                            ?>
+                                            <input type="text" class="form-control" readonly value="<?php if(!empty($AuthorizedByInfo[0])) echo $AuthorizedByInfo[0]['contactname'] ?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="enqdate" class="col-sm-4 control-label">Management
+                                            Remarks</label>
+                                        <div class="col-sm-8">
+                                        <textarea class="form-control"
+                                                  id="frmBasicMgmtRemarks" readonly style="height: 64px"><?php if (!empty($ArrBasicInfo->mgmtremarks)) echo $ArrBasicInfo->mgmtremarks ?></textarea>
+                                            <div class="herr" id="ErrfrmBasicMgmtRemarks"></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="enqdate" class="col-sm-4 control-label">Request Status</label>
+                                        <div class="col-sm-8">
+                                            <?php
+                                            ?>
+                                            <select class="form-control" id="" disabled>
+                                                <option value="">Choose</option>
+                                                <option value="1" <?php if ($ArrBasicInfo->deptcurrentstatus == '1') echo 'selected' ?>>
+                                                    REQUEST PENDING
+                                                </option>
+                                                <option value="2" <?php if ($ArrBasicInfo->deptcurrentstatus == '2') echo 'selected' ?>>
+                                                    ACCEPT
+                                                </option>
+                                                <option value="3" <?php if ($ArrBasicInfo->deptcurrentstatus == '3') echo 'selected' ?>>
+                                                    REJECT
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">Assign SAMPLE Queue. No</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" name="" class="form-control" id="" readonly
+                                                   value="<?php echo $ArrBasicInfo->queueno ?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="enqdate" class="col-sm-4 control-label">Queue No. Assigned Date
+                                            &
+                                            Time</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" name="" class="form-control" id="" readonly
+                                                   value="<?php if (empty($ArrBasicInfo->queueno_assigned_date)) echo ''; else echo date('d-m-Y H:i:s', strtotime($ArrBasicInfo->queueno_assigned_date)) ?>">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="enqdate" class="col-sm-4 control-label">
+                                            CAD Dept. Remarks
+                                        </label>
+                                        <div class="col-sm-8">
+                                                <textarea readonly class="form-control"
+                                                          style="height: 64px"><?php if (!empty($ArrBasicInfo->deptremarks)) echo $ArrBasicInfo->deptremarks ?></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <!--Content Ends-->
+
+                            <div class="box-header with-border">
+                                <h3 class="box-title">FABRIC - MATERIAL INDENT</h3>
+                            </div>
+                            <div id="fabIndentJxl"></div>
+                            <form class="form-horizontal" id="frmBasicFabMatIndent">
+                                <div class="box-body pdl0">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Material Indent Ref.
+                                                No.</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control" readonly value="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Issue to Dept.</label>
+                                            <div class="col-sm-8">
+                                                <select class="form-control" id="FabMatIssuedToDept">
+                                                    <option value="">Choose</option>
+                                                    <?php
+                                                    foreach ($ArrAllUsertypes as $key => $user) {
+                                                        echo '<option value="' . $user . '">' . $user . '</option>';
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Request Date & Time</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control" readonly value="<?php
+                                                if (!empty($fabIndentDetails))
+                                                    echo dateTimeHelp($fabIndentDetails[0]['requestdt'], false);
+                                                ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label class="col-sm-4 control-label">Cutoff Date & Time</label>
+                                            <div class="col-sm-8">
+                                                <div class='input-group date' id='fabCutOffDt'>
+                                                    <input type='text' class="form-control" id="frmBasicFabCutOffDt">
+                                                    <span class="input-group-addon"><span
+                                                            class="glyphicon glyphicon-calendar"></span></span>
+                                                </div>
+                                                <div class="herr" id="ErrFrmBasicFabCutOffDt"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="box-body">
+                        <div class="form-group">
+                            <label for="enqdate" class="col-sm-3">Attachments</label>
+                            <div class="form-group">
+                                <div class="col-sm-12"
+                                     style="border:2px dotted #A5A5C7; padding: 10px; background-color: #eee">
+                                    <ul style="list-style: none;">
+                                        <?php
+                                        $VarFdr = UPLOADS_SLASH."samplerequest".DIRECTORY_SEPARATOR.$VarRequestId.DIRECTORY_SEPARATOR."Merchant".DIRECTORY_SEPARATOR;
+                                        $ArrDwnExtensions = DWN_FILE_EXTENSIONS;
+                                        if(file_exists($VarFdr)) {
+                                            if ($dh = opendir($VarFdr)) {
+                                                while (($file = readdir($dh)) !== false) {
+                                                    if(is_file($VarFdr . $file)) {
+                                                        ?>
+                                                        <li>
+                                                            <div style="padding: 10px 0;">
+                                                                <?php echo $file .' ';
+                                                                $VarFileExt = pathinfo($file, PATHINFO_EXTENSION);
+                                                                $downUrl = base_url()."dashboard/commonSimpleDownload?id=".urlencode(base64_encode($VarRequestId))."&fileName=".urlencode($file)."&folder=samplerequest&by=Merchant" ?>&nbsp;<a href="<?php echo $downUrl ?>">
+                                                                    <i class="fa fa-download fa-lg" aria-hidden="true"></i>
+                                                                </a>&nbsp;&nbsp;
+                                                                <?php
+                                                                if(in_array($VarFileExt,$ArrDwnExtensions)) {
+                                                                }
+                                                                else {
+                                                                    ?>
+                                                                    <a href="<?php echo base_url()."dashboard/openFileInBrowser?id=".$VarRequestId."&fileName=".$file."&folder=samplerequest&by=Merchant" ?>" target="_blank">
+                                                                        <i class="fa fa-file fa-lg" aria-hidden="true"></i>
+                                                                    </a>
+                                                                    <?php
+                                                                }
+                                                                ?>
+                                                            </div>
+                                                        </li>
+                                                        <?php
+                                                    }
+                                                }
+                                                closedir($dh);
+                                            }
+                                        }
+                                        else {
+                                            echo 'No attachments';
+                                        }
+                                        ?>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+<a href="<?php echo base_url('msamplerequest/bom_ind/48') ?>" class="btn btn-info">Next</a>
+                </div>
+            </div>
+        </section>
+    </div><!-- /.content-wrapper -->
+    <?php $this->load->view(CNFCOMPANY . 'template/templatefooter'); ?>
+    <div class="control-sidebar-bg"></div>
+</div><!-- ./wrapper -->
+<script src="<?php echo base_url(); ?>assets/js/jexcel4/jsuites.js"></script>
+<script src="<?php echo base_url(); ?>assets/js/jexcel4/jexcel.js"></script>
+<script src="<?php echo base_url(); ?>assets/plugins/datepicker/bootstrap-datepicker.js"></script>
+<script type="text/javascript">
+    var GlbOrderId = '<?php echo $VarOrderId ?>';
+    var samReqGrid = '<?php echo $jsonSamReqGrid ?>';
+    var GlbRequestId = '<?php echo $VarRequestId ?>';
+    let jsonSamReqGrid = JSON.parse(samReqGrid);
+    console.log(jsonSamReqGrid,'JSON.parse(jsonSamReqGrid)');
+    colorGroupCboComp = {}; groupCcc = {}; groupCcc_Gparts = {}; groupCcc_GpartsBlend = {};
+    groupCcc_GpartsBlendContent = {}; groupCcc_GpartsBlendContentFabric = {};
+    groupCcc_GpartsBlendContentFabricGsm = {}; groupCcc_GpartsBlendContentFabricGsmDyeingType = {};
+    function fnPopulateValueArray(ArrName, KeyValue, InsertVal) {
+        if (jQuery.inArray(KeyValue, ArrName)) {
+            ArrName[KeyValue] = InsertVal + "|-|" + ArrName[KeyValue];
+        }
+        return ArrName;
+    }
+
+    varSampleReq = jexcel(document.getElementById('jxlSampleReq'), {
+        columns: [
+            {type: 'text', title: 'Combo', width: 110, readOnly: true},
+            {type: 'text', title: 'Component', width: 110, readOnly: true},
+            {type: 'text', title: 'Color', width: 110, readOnly: true},
+            {type: 'text', title: 'P. O. No.', width: 110, readOnly: true},
+            {type: 'text', title: 'Size Spec Code', width: 110, readOnly: true},
+            {type: 'text', title: 'Requirement',width: 100, readOnly: true},
+            {type: 'text', title: 'Purpose', width: 100, readOnly: true},
+            {type: 'text', title: 'Category', width: 100, readOnly: true},
+            {type: 'text', title: 'If Revised or In-line Pre. SAMPLE Ref. No.', width: 150, eadOnly: true},
+            {type: 'text', title: 'Required Size(s)', width: 70, readOnly: true},
+            {type: 'text', title: 'Qty.', width: 70, readOnly: true}
+        ],
+        columnDrag: true,
+        allowInsertColumn: false,
+        allowInsertRow: false,
+        data: jsonSamReqGrid
+    });
+
+    MakeAsynPostRequest(base_path+"msamplerequest/fab_ind","rFrom=1&enqId="+GlbOrderId,"json",function (data) {
+        ArrFIColor = data.ArrFIColor;
+        ArrFIColor = getUnique(ArrFIColor);
+        ArrFIGarmentParts = data.ArrFIGarmentParts;
+        ArrFIFabBlend = data.ArrFIBlend;
+        ArrFIContent = data.ArrFIContent;
+        ArrFIName = data.ArrFIName;
+        ArrFIGsm = data.ArrFIGsm;
+        ArrFIDyeingType = data.ArrFIDyeingType;
+        GlbArrUnitOfMeasure = data.ArrUnitOfMeasure;
+        ArrFIDiaDim = [];
+        ArrSizes = data.ArrSizes;
+
+        GlbKnitGridForFilter = data.ArrFabricKnit;
+        for(var i = 0; i < GlbKnitGridForFilter.length; i++) {
+            console.log(GlbKnitGridForFilter[i][0]);
+            colorGroupCboComp = fnPopulateValueArray(colorGroupCboComp,GlbKnitGridForFilter[i][0]+"|#|"+GlbKnitGridForFilter[i][1],GlbKnitGridForFilter[i][2]);
+            groupCcc = fnPopulateValueArray(groupCcc,GlbKnitGridForFilter[i][0]+"|#|"+GlbKnitGridForFilter[i][1],GlbKnitGridForFilter[i][3]);
+
+            groupCcc_Gparts = fnPopulateValueArray(groupCcc_Gparts,GlbKnitGridForFilter[i][0]+"|#|"+GlbKnitGridForFilter[i][1]+"|#|"+
+                GlbKnitGridForFilter[i][3],GlbKnitGridForFilter[i][4]);
+
+            groupCcc_GpartsBlend = fnPopulateValueArray(groupCcc_GpartsBlend,GlbKnitGridForFilter[i][0]+"|#|"+GlbKnitGridForFilter[i][1]+"|#|"+
+                GlbKnitGridForFilter[i][3]+"|#|"+GlbKnitGridForFilter[i][4],GlbKnitGridForFilter[i][5]);
+
+            groupCcc_GpartsBlendContent = fnPopulateValueArray(groupCcc_GpartsBlendContent,GlbKnitGridForFilter[i][0]+"|#|"+GlbKnitGridForFilter[i][1]+"|#|"+
+                GlbKnitGridForFilter[i][3]+"|#|"+GlbKnitGridForFilter[i][4]+"|#|"+GlbKnitGridForFilter[i][5],GlbKnitGridForFilter[i][6]);
+
+            groupCcc_GpartsBlendContentFabric = fnPopulateValueArray(groupCcc_GpartsBlendContentFabric,GlbKnitGridForFilter[i][3]+"|#|"+GlbKnitGridForFilter[i][4]+"|#|"+
+                GlbKnitGridForFilter[i][5]+"|#|"+GlbKnitGridForFilter[i][6],GlbKnitGridForFilter[i][7]);
+
+            groupCcc_GpartsBlendContentFabricGsm = fnPopulateValueArray(groupCcc_GpartsBlendContentFabricGsm,GlbKnitGridForFilter[i][3]+"|#|"+GlbKnitGridForFilter[i][4]+"|#|"+
+                GlbKnitGridForFilter[i][5]+"|#|"+GlbKnitGridForFilter[i][6],GlbKnitGridForFilter[i][7]);
+
+            groupCcc_GpartsBlendContentFabricGsmDyeingType = fnPopulateValueArray(groupCcc_GpartsBlendContentFabricGsmDyeingType,
+                GlbKnitGridForFilter[i][3]+"|#|"+GlbKnitGridForFilter[i][4]+"|#|"+GlbKnitGridForFilter[i][5]+"|#|"+GlbKnitGridForFilter[i][6]+"|#|"+GlbKnitGridForFilter[i][7],
+                GlbKnitGridForFilter[i][9]);
+
+        }
+        if(data.jsonDiaDimension != "") {
+            diaDimensionJxl = JSON.parse(data.jsonDiaDimension);
+            for(let ii = 0; ii < diaDimensionJxl.length; ii++) {
+                for(let ij = 2; ij < ArrSizes.length; ij++ ) {
+                    ArrFIDiaDim.push(diaDimensionJxl[ii][ij]);
+                }
+            }
+            console.log(ArrFIDiaDim,'ArrFIDiaDim');
+            ArrFIDiaDim = getUnique(ArrFIDiaDim);
+            console.log(ArrFIDiaDim,'ArrFIDiaDim AFTER');
+        }
+
+        fabIndentColorFilter = function(instance, cell, c, r, source) {
+            console.log(jsonSamReqGrid,'jsonSamReqGrid');
+            console.log(ArrFIColor,'ArrFIColor');
+            let cbo = varSampleReq.getColumnData(0);
+            let com = varSampleReq.getColumnData(1);
+            console.log(cbo,'cbo');
+            console.log(com,'com');
+            let cboCompGroupStr = colorGroupCboComp[cbo+"|#|"+com];
+            if(cboCompGroupStr) {
+                let cboCompGroup = cboCompGroupStr.replace('|-|undefined','');
+                if(cboCompGroup) {
+                    console.log(cboCompGroup,'cboCompGroup');
+                    let fabColor = cboCompGroup.split('|-|');
+                    console.log(fabColor,'fabColor');
+                    return getUnique(fabColor);
+                }
+            }
+            else {
+                return [];
+            }
+        };
+
+        ArrGarmentPartsFilter = function(instance, cell, c, r, source) {
+            let cbo = varSampleReq.getColumnData(0);
+            let com = varSampleReq.getColumnData(1);
+            //var color     = sR[tblId][2];
+            //var gPartsGroup = groupCcc[combo+"|#|"+component+"|#|"+color];
+            let gPartsGroup = groupCcc[cbo+"|#|"+com];
+            if(gPartsGroup) {
+                var gPartsArr   = gPartsGroup.split('|-|');
+                gPartsArr = gPartsArr.filter((val) => val != "undefined");
+                console.log(gPartsArr,'gPartsArr');
+                return getUnique(gPartsArr);
+            }
+            else {
+                return [];
+            }
+        };
+
+        ArrFabBlendFilter = function(instance, cell, c, r, source) {
+            let cbo = varSampleReq.getColumnData(0);
+            let com = varSampleReq.getColumnData(1);
+            //var color     = sR[tblId][2];
+            let garmentPart = instance.jexcel.getValueFromCoords(c - 1,r);
+            //var fanBlendGroup = groupCcc_Gparts[combo+"|#|"+component+"|#|"+color+"|#|"+garmentPart];
+            var fanBlendGroup = groupCcc_Gparts[cbo+"|#|"+com+"|#|"+garmentPart];
+            if(fanBlendGroup) {
+                let fabBlendArr   = fanBlendGroup.split('|-|');
+                fabBlendArr = fabBlendArr.filter((val) => val != "undefined");
+                console.log(fabBlendArr,'fabBlendArr');
+                return getUnique(fabBlendArr);
+            }
+            else {
+                return [];
+            }
+        };
+
+        ArrFabContentFilter = function(instance, cell, c, r, source) {
+            let cbo = varSampleReq.getColumnData(0);
+            let com = varSampleReq.getColumnData(1);
+            //var color     = sR[tblId][2];
+            let garmentPart = instance.jexcel.getValueFromCoords(c - 2,r);
+            let blend = instance.jexcel.getValueFromCoords(c - 1,r);
+            //var group = groupCcc_GpartsBlend[combo+"|#|"+component+"|#|"+color+"|#|"+garmentPart+"|#|"+blend];
+            let group = groupCcc_GpartsBlend[cbo+"|#|"+com+"|#|"+garmentPart+"|#|"+blend];
+
+            if(group) {
+                let groupArr   = group.split('|-|');
+                groupArr = groupArr.filter((val) => val != "undefined");
+                console.log(groupArr,'groupArr');
+                return getUnique(groupArr);
+            }
+            else {
+                return [];
+            }
+        };
+
+        ArrFabFabricFilter = function(instance, cell, c, r, source) {
+            var tblId = instance.id.substring(instance.id.indexOf('_')+1);
+            let cbo = varSampleReq.getColumnData(0);
+            let com = varSampleReq.getColumnData(1);
+            //var color     = sR[tblId][2];
+            let garmentPart = instance.jexcel.getValueFromCoords(c - 3,r);
+            let blend = instance.jexcel.getValueFromCoords(c - 2,r);
+            let content = instance.jexcel.getValueFromCoords(c - 1,r);
+            //var group = groupCcc_GpartsBlendContent[combo+"|#|"+component+"|#|"+color+"|#|"+garmentPart+"|#|"+blend+"|#|"+content];
+            let group = groupCcc_GpartsBlendContent[cbo+"|#|"+com+"|#|"+garmentPart+"|#|"+blend+"|#|"+content];
+
+            if(group) {
+                let groupArr   = group.split('|-|');
+                groupArr = groupArr.filter((val) => val != "undefined");
+                console.log(groupArr,'groupArr');
+                return getUnique(groupArr);
+            }
+            else {
+                return [];
+            }
+        };
+
+        fabIndentGsmFilter = function(instance, cell, c, r, source) {
+            /*var tblId = instance.id.substring(instance.id.indexOf('_')+1);
+            var combo     = sR[tblId][0];
+            var component = sR[tblId][1];*/
+            //var color     = sR[tblId][2];
+            let garmentPart = instance.jexcel.getValueFromCoords(c - 4,r);
+            let blend = instance.jexcel.getValueFromCoords(c - 3,r);
+            let content = instance.jexcel.getValueFromCoords(c - 2,r);
+            let fabric = instance.jexcel.getValueFromCoords(c - 1,r);
+            //var group = groupCcc_GpartsBlendContent[combo+"|#|"+component+"|#|"+color+"|#|"+garmentPart+"|#|"+blend+"|#|"+content];
+            console.log(groupCcc_GpartsBlendContentFabric,'groupCcc_GpartsBlendContentFabric');
+            let group = groupCcc_GpartsBlendContentFabricGsm[garmentPart+"|#|"+blend+"|#|"+content+"|#|"+fabric];
+            if(group) {
+                console.log(group,'group');
+                let groupArr   = group.split('|-|');
+                console.log(groupArr,'groupArr');
+                groupArr = groupArr.filter((val) => val != "undefined");
+                console.log(groupArr,'groupArr');
+                return getUnique(groupArr);
+            }
+            else {
+                return [];
+            }
+        };
+
+        fabIndentDyeingTypeFilter = function (instance, cell, c, r, source) {
+            let garmentPart = instance.jexcel.getValueFromCoords(c - 5,r);
+            let blend = instance.jexcel.getValueFromCoords(c - 4,r);
+            let content = instance.jexcel.getValueFromCoords(c - 3,r);
+            let fabric = instance.jexcel.getValueFromCoords(c - 2,r);
+            let gsm = instance.jexcel.getValueFromCoords(c - 1,r);
+            let group = groupCcc_GpartsBlendContentFabricGsmDyeingType[garmentPart+"|#|"+blend+"|#|"+content+"|#|"+fabric+"|#|"+gsm];
+            console.log(group,'group dyeing type');
+            if(group) {
+                let groupArr   = group.split('|-|');
+                groupArr = groupArr.filter((val) => val !== "undefined");
+                console.log(groupArr,'groupArr dyeing type');
+                let groupArrFinal = getUnique(groupArr);
+                console.log(groupArrFinal,'groupArrFinal Dyeingtype');
+                return groupArrFinal;
+            }
+            else return [];
+        };
+
+
+
+        jexcel(document.getElementById('fabIndentJxl'), {
+            columns: [
+                {type: 'text', title: 'Fab. Ref. No.', width: 200},
+                {type: 'dropdown', title: 'Color', width: 110, source: ArrFIColor, filter: fabIndentColorFilter},
+                {type: 'dropdown', title: 'Garment Parts', width: 132, wordWrap: true, source: getUnique(ArrFIGarmentParts), filter : ArrGarmentPartsFilter },
+                {type: 'dropdown', title: 'Fabric Blend (%)', width: 110, source: getUnique(ArrFIFabBlend), filter: ArrFabBlendFilter },
+                {type: 'dropdown', title: 'Content', width: 130, source: getUnique(ArrFIContent), filter: ArrFabContentFilter },
+                {type: 'dropdown', title: 'Fabric', width: 130, source: getUnique(ArrFIName), filter : ArrFabFabricFilter },
+                {type: 'dropdown', title: 'GSM', width: 70, source: getUnique(ArrFIGsm), filter: fabIndentGsmFilter },
+                {type: 'dropdown', title: 'Dyeing Type', width: 70, source: getUnique(ArrFIDyeingType), filter: fabIndentDyeingTypeFilter },
+                {type: 'dropdown', title: 'Dia / Dim. (W*H)', width: 140, wordWrap: true, source: ArrFIDiaDim },
+                {type: 'dropdown', title: 'UOM', width: 80, source: GlbArrUnitOfMeasure, wordWrap: true},
+                {type: 'text', title: 'Material Indent Qty.', width: 100},
+                {type: 'dropdown', title: 'UOM', width: 80, source: GlbArrUnitOfMeasure, wordWrap: true}
+            ],
+            data: [
+                []
+            ]
+        });
+
+
+    });
+    cadRefNoFilter = function(instance, cell, c, r, source) {
+        var tblId = instance.id.substring(instance.id.indexOf('_')+1);
+        var component = sR[tblId][1];
+        var spc     = sR[tblId][4];
+        console.log(GlbCadRefNoWithFilter,'GlbCadRefNoWithFilter');
+        let ArrCadRefNoMix = GlbCadRefNoWithFilter[component+"|#|"+spc];
+        console.log(ArrCadRefNoMix,'ArrCadRefNoMix');
+        if(ArrCadRefNoMix) {
+            return getUnique(ArrCadRefNoMix);
+        }
+        else {
+            return [];
+        }
+    };
+</script>
+<?php $this->load->view(CNFCOMPANY . 'template/pagefooter'); ?>

@@ -1,0 +1,680 @@
+$(document).ready(function () {
+
+    // **************************************** //
+    var selectCount = 0;
+    let editCount = 0;
+
+    getSurplusDraftDetails();
+    
+
+    $('#externalForm').hide();
+    $('#dc_type').html('INTERNAL');
+    $("#internal").attr('checked', true).trigger('click');
+
+    $('input[type=radio][name=dc_type]').change(function() {
+        if(this.value== 'INTERNAL')
+        {
+            $('#dc_type').html('INTERNAL');
+            $('#internalForm').show();
+            $('#externalForm').hide();
+        }
+        else {
+            $('#dc_type').html('EXTERNAL');
+            $('#internalForm').hide();
+            $('#externalForm').show();
+        }
+    });
+
+    var swalWithBootstrapButtons = Swal.mixin({
+        buttonsStyling: false
+    });    
+    
+    function alertMessageFunction(mode) {
+        if(mode === 'confirmation_save') {
+            return {
+                title: 'Are you sure want to \n save the details ?',
+                text: "If you save You won't be able to revert this!",
+                type: 'warning',
+                showCancelButton: true,
+                scrollbarPadding: false,
+                confirmButtonText: 'Yes, do it!',
+                cancelButtonText: 'No, cancel!',
+                reverseButtons: true,
+                customClass: {
+                    'confirmButton': 'btn btn-green mx-2 px-3',
+                    'cancelButton': 'btn btn-red mx-2 px-3'
+                }
+            }
+        }
+         
+        if(mode === 'saved' ) {
+            return {
+                title: 'Saved!',
+                text: 'Operation completed successfully.',
+                type: 'success',
+                icon: 'success',
+                customClass: {
+                    'confirmButton': 'btn btn-info px-5'
+                }
+            }
+        }
+        
+        if(mode == "cancelled") {
+            return {
+                title: 'Cancelled',
+                text: 'Cancelled successfully.',
+                type: 'error',
+                icon: 'error',
+                customClass: {
+                    'confirmButton': 'btn btn-secondary px-5'
+                }
+            }
+        }
+        
+        if(mode == "validation_error") {
+            return {
+                title: 'Warning',
+                text: "Please fill all free text and select fields",
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                customClass: {
+                    'confirmButton': 'btn btn-secondary px-5'
+                }
+            }
+        }
+        
+        if(mode == "selecterror") {
+            return {
+                title: 'Warning',
+                text: "Please select atleast one requirement",
+                icon: 'warning',
+                confirmButtonText: 'OK',
+                customClass: {
+                    'confirmButton': 'btn btn-secondary px-5'
+                }
+            }
+        }
+
+        if(mode == "error") {
+            return {
+                title: 'Error',
+                text: "Something went wrong",
+                icon: 'error',
+                confirmButtonText: 'OK',
+                customClass: {
+                    'confirmButton': 'btn btn-secondary px-5'
+                }
+            }
+        }
+        
+        if(mode === 'uncheck_val') {
+            return {
+                title: 'Are you sure want to \n save the details ?',
+                text: "Some item's are unchecked!",
+                type: 'warning',
+                showCancelButton: true,
+                scrollbarPadding: false,
+                confirmButtonText: 'Yes, do it!',
+                cancelButtonText: 'No, cancel!',
+                reverseButtons: true,
+                customClass: {
+                    'confirmButton': 'btn btn-green mx-2 px-3',
+                    'cancelButton': 'btn btn-red mx-2 px-3'
+                }
+            }
+        }
+    }
+
+    function validateForm(validateField, dataValue ) {
+        let errorCount = 0;
+        for (let i = 0; i < dataValue.length; i++) {
+            for(let j = 0; j < validateField.length; j++) {
+                let col = validateField[j];
+                if(dataValue[i][col] === "") {
+                    errorCount++;
+                }
+            }
+        }
+        return errorCount;
+    }
+
+    // *********************************************************************************************************************************** 
+    // SAMPLE REQUEST STARTS HERE 
+    // ***********************************************************************************************************************************
+
+    function getSurplusDraftDetails() {
+        var data = new FormData();
+        data.append('enquiry_id', enquiry_id);
+        data.append('reqId', request_id);
+        data.append('itemCode', itemCode);
+        data.append('pId', pId);
+        let request = $.ajax({
+            type: "POST",
+            url: base_path + 'request/Bomrequest/getSurplusDCList',
+            data: data,
+            processData: false,
+            contentType: false,
+            cache: false,
+            success: function (data) {
+                sample_requirement_data = JSON.parse(data);
+                append_sample_request(sample_requirement_data);
+                getAmtToWords();
+            },
+            error: function () {
+                console.log("Error");
+            }
+        });
+    }
+
+    SUMCOL = function(instance, columnId) {
+        var total = 0;
+        for (var j = 0; j < instance.options.data.length; j++) {
+            if (Number(instance.records[j][columnId - 2].innerHTML)) {
+                total += Number(instance.records[j][columnId - 2].innerHTML);
+            }
+        }
+        total = numeral(total).format('0');
+        total = (total > 0) ? total : '';
+        return total;
+    }
+    
+    GPWSUMCOL = function(instance, columnId) {
+        var total = 0;
+        for (var j = 0; j < instance.options.data.length; j++) {
+            if (Number(instance.records[j][columnId - 1].innerHTML)) {
+                total += Number(instance.records[j][columnId - 1].innerHTML);
+            }
+        }
+        total = numeral(total).format('0.00');
+        //total = (total > 0) ? total : ''
+        return total;
+    }
+    
+    SUBSUMCOL = function(instance, columnId) {
+        var total = 0;
+        for (var j = 0; j < instance.options.data.length; j++) {
+            if (Number(instance.records[j][columnId - 1].innerHTML)) {
+                total += Number(instance.records[j][columnId - 1].innerHTML);
+            }
+        }
+        total = numeral(total).format('0.00');
+        // total = (total > 0) ? total : '';
+        console.log(editCount);
+        if(editCount > 0) {
+             getAmtToWords();
+        }
+      
+        return total;
+    }
+    
+    
+    function footer(grid_name)
+    {
+        if(grid_name == 'issued_footer')
+        {
+            return [[ '', '', '', '', '', '', '', '', '', '', '', '', 'Total:', '=GPWSUMCOL(TABLE(), COLUMN(), "")', '', '', '=GPWSUMCOL(TABLE(), COLUMN(), "")', '', '=SUBSUMCOL(TABLE(), COLUMN(), "")']];
+        }
+    }
+
+    function append_sample_request(data) {
+
+        // *** JEXCEL STARTS *** //
+        $('#materialIssueDetails').html('');
+        let list = {
+            data: data.draftData,
+            columns: [
+                { title:'id', align:'left',type:'hidden'},
+                { title:'mode', align:'left',type:'hidden'},
+                { type: 'checkbox', title: 'Mark', width: '8%', align: 'left' },
+                { type: 'text', title: 'Original\nP.I. Ref. No.', width: '8%', align: 'center', readOnly: true },
+                { type: 'text', title: 'Original\nInvoice No.', width: '8%', align: 'left', readOnly: true },
+                { type: 'text', title: 'Item\nDescription', width: '8%', align: 'left', readOnly: true },
+                { type: 'text', title: 'Blend (%) / Content /\n Material', width: '8%', align: 'left', readOnly: true },
+                { type: 'text', title: 'Garment\n Size', width: '8%', align: 'left', readOnly: true },
+                { type: 'text', title: 'Item Code', width: '8%', align: 'left', readOnly: true },
+                { type: 'text', title: 'Item Colour Code', width: '10%', align: 'center', readOnly: true },
+                { type: 'text', title: 'Size / Dim.\n (L*W*H)', width: '7%', align: 'right', readOnly: true },
+                { type: 'text', title: 'UOM', width: '6%', align: 'center',  readOnly: true },
+                { type: 'text', title: 'Item - Lot / Batch\n Ref. No.', width: '6%', align: 'center',  readOnly: true },
+                { type: 'text', title: 'Qty.', width: '6%', align: 'right', readOnly: true },
+                { type: 'text', title: 'UOM', width: '6%', align: 'center', readOnly: true },
+                { type: 'text', title: 'Unit Rate\n(Rs.)', width: '6%', align: 'right',  readOnly: true },
+                { type: 'text', title: 'Amount\n(Rs.)', width: '6%', align: 'right',  readOnly: true },
+                { type: 'text', title: 'GST / \n IGST (%)', width: '6%', align: 'right', readOnly: true },
+                { type: 'text', title: 'Sub Total\n(Rs.)', width: '6%', align: 'right', readOnly: true },
+            ],
+            // columns: data.column,
+            minDimensions: [4, 1],
+            allowDeleteColumn: false,
+            allowInsertRow: false,
+            allowInsertColumn: false,
+            footers: footer('issued_footer'),
+            // footers: [[ '', '', '', '', '', '', '', '', '', 'Total:', '=SUMCOL(TABLE(), COLUMN())' ]],
+            // footers: footer(data.column.length),
+            onchange: function(instance, cell, col, row, val, label, cellName) {
+                if(col == 1) 
+                {
+                    getReferenceValue(list.data[row], val, row);
+                }
+                if(col == 2) 
+                {
+                    editCount = parseInt(editCount) + 1;
+                }
+            },
+            updateTable: function(instance, cell, col, row, val, label, cellName) {
+                if(col == 2) 
+                {
+                    checkVal = val;
+                }
+                if(col == 13) 
+                {
+                    qty = val;
+                    txtValue = numeral(val).format('0.00');
+                    $(cell).text(txtValue);
+                    instance.jexcel.options.data[row][col] = txtValue;
+                }
+                if(col == 15) 
+                {
+                    rate = val;
+                    txtValue = numeral(val).format('0.00');
+                    $(cell).text(txtValue);
+                    instance.jexcel.options.data[row][col] = txtValue;
+                }
+                if(col == 16) 
+                {
+                    if(checkVal === true) {
+                        tot_amt = parseFloat(qty) * parseFloat(rate);
+                        txtValue = numeral(tot_amt).format('0.00');
+                        $(cell).text(txtValue);
+                        instance.jexcel.options.data[row][col] = txtValue;
+                    } else {
+                        tot_amt = 0;
+                        txtValue = numeral(tot_amt).format('0.00');
+                        $(cell).text(txtValue);
+                        instance.jexcel.options.data[row][col] = txtValue;
+                    }
+                    
+                }
+                if(col == 17) 
+                {
+                    gst = val;
+                    txtValue = numeral(val).format('0.00');
+                    $(cell).text(txtValue);
+                    instance.jexcel.options.data[row][col] = txtValue;
+                }
+                if(col == 18) 
+                {
+                    if(checkVal === true) {
+                        sub_tot = parseFloat(tot_amt) + (parseFloat(tot_amt) * parseFloat(gst) / 100);
+                        txtValue = numeral(sub_tot).format('0.00');
+                        $(cell).text(txtValue);
+                        instance.jexcel.options.data[row][col] = txtValue;
+                    }
+                    else {
+                        sub_tot = 0;
+                        txtValue = numeral(tot_amt).format('0.00');
+                        $(cell).text(txtValue);
+                        instance.jexcel.options.data[row][col] = txtValue;
+                    }
+                }
+            },
+        };
+
+        dclist_vm = new Vue({
+            el: '#materialIssueDetails',
+            mounted: function () {
+                let spreadsheet = jexcel(this.$el, list);
+                Object.assign(this, spreadsheet);
+            }
+        });
+
+    }
+
+    function getReferenceValue(data, status, row) {
+        if(status === true) {
+            selectCount = selectCount+1;
+        }
+        else {
+            selectCount = selectCount-1;
+        }
+    }
+    
+    function validateCountForm(dclist) {
+        let errorCount = 0;
+        for (let i = 0; i < dclist.length; i++) {
+            if(dclist[i][1]  === true) {
+              
+            } else {
+                errorCount++;
+            }
+        }
+         
+        return errorCount;
+    }
+    
+    // *********************************************************************************************************************************** 
+    // SAMPLE REQUEST ENDS HERE 
+    // ***********************************************************************************************************************************
+    
+    $('#clearDraft').click(function () {
+        // clearDraftFunction();
+        swalWithBootstrapButtons.fire(
+                // *** CONFIRMATION MESSAGE *** //
+                alertMessageFunction('confirmation_save')
+            ).then(function (result) {
+                if (result.value) {
+                    clearDraftFunction();
+                } 
+                else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // *** CANCELLED MESSAGE *** //
+                    swalWithBootstrapButtons.fire(
+                        alertMessageFunction('cancelled')
+                    );
+                }
+            });
+    });
+    
+    function clearDraftFunction()
+    {
+        let dataform = new FormData();
+        let dc_data = dclist_vm.getData();
+        dataform.append('data', JSON.stringify(dc_data));
+        dataform.append('enquiry_id', enquiry_id);
+        dataform.append('reqId', request_id);
+        dataform.append('itemCode', itemCode);
+
+        let request = $.ajax({
+            type: "POST",
+            url: base_path + 'request/Bomrequest/clearSurplusDraftFunction',
+            data: dataform,
+            processData: false,
+            contentType: false,
+            cache: false,
+            success: function (data) {
+                // *** SAVED MESSAGE *** //
+                swalWithBootstrapButtons.fire(
+                    alertMessageFunction('saved')
+                ).then(okay => {
+                    if (okay) {
+                        window.location.href = base_path + 'company/Mstoreuser/surplusstocklist';
+                    }
+                 });
+            },
+            error: function () {
+                console.log("Error");
+            }
+        });
+    }
+    
+    
+    $('#getValues').click(function () {
+        let dclist = dclist_vm.getData();
+        let validateReqCount = validateCountForm(dclist);
+        
+        if ($('#received_by').val() === "")
+        {
+            swalWithBootstrapButtons.fire(
+                alertMessageFunction('validation_error')
+            );
+        }
+        else if ($('#amount_in_words').val() === "")
+        {
+            swalWithBootstrapButtons.fire(
+                alertMessageFunction('validation_error')
+            );
+        }
+        else if ($('#payment_terms').val() === "")
+        {
+            swalWithBootstrapButtons.fire(
+                alertMessageFunction('validation_error')
+            );
+        }
+        else if(validateReqCount > 0) {
+            swalWithBootstrapButtons.fire(
+                // alertMessageFunction('uncheck_val')
+                alertMessageFunction('uncheck_val')
+            ).then(function (result) {
+                if (result.value) {
+                    updateFunction();
+                }
+            });
+            
+        }
+        else {
+            swalWithBootstrapButtons.fire(
+                // *** CONFIRMATION MESSAGE *** //
+                alertMessageFunction('confirmation_save')
+            ).then(function (result) {
+                if (result.value) {
+                    updateFunction();
+                } 
+                else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // *** CANCELLED MESSAGE *** //
+                    swalWithBootstrapButtons.fire(
+                        alertMessageFunction('cancelled')
+                    );
+                }
+            });
+        }
+    });
+
+    function updateFunction_old() {
+
+        let dataform = new FormData();
+        let dc_data = dclist_vm.getData();
+        dataform.append('data', JSON.stringify(dc_data));
+        dataform.append('received_by', $('#received_by').val());
+        dataform.append('amount_in_words', $('#amount_in_words').val());
+        dataform.append('payment_terms', $('#payment_terms').val());
+        dataform.append('enquiry_id', enquiry_id);
+        dataform.append('reqId', request_id);
+        dataform.append('pId', pId);
+        dataform.append('itemCode', itemCode);
+
+        let request = $.ajax({
+            type: "POST",
+            url: base_path + 'request/Bomrequest/updateSurplusDCList',
+            data: dataform,
+            processData: false,
+            contentType: false,
+            cache: false,
+            success: function (data) {
+                // *** SAVED MESSAGE *** //
+                swalWithBootstrapButtons.fire(
+                    alertMessageFunction('saved')
+                ).then(okay => {
+                    if (okay) {
+                        window.location.href = base_path + 'company/Mstoreuser/surplusstocklist';
+                    }
+                 });
+            },
+            error: function () {
+                console.log("Error");
+            }
+        });
+    }
+    function updateFunction() {
+
+    let dataform = new FormData();
+    let dc_data = dclist_vm.getData();
+    //console.log(dc_data);
+    dataform.append('data', JSON.stringify(dc_data));
+    dataform.append('received_by', $('#received_by').val());
+    dataform.append('amount_in_words', $('#amount_in_words').val());
+    dataform.append('payment_terms', $('#payment_terms').val());
+    dataform.append('enquiry_id', enquiry_id);
+    dataform.append('reqId', request_id);
+    dataform.append('pId', pId);
+    dataform.append('itemCode', itemCode);
+
+    let request = $.ajax({
+        type: "POST",
+        url: base_path + 'request/Bomrequest/updateSurplusDCList',
+        data: dataform,
+        processData: false,
+        contentType: false,
+        cache: false,
+        success: function (data) {
+            // Parse the response data
+            const response = JSON.parse(data);
+            console.log(response);
+
+            alert(response.status);
+
+            // Check if the response status is 'success'
+            if (response.status === 'success') {
+                // Show success message with SweetAlert
+                swalWithBootstrapButtons.fire(
+                    alertMessageFunction('saved') // Assuming this function provides the message
+                ).then(okay => {
+                    if (okay) {
+                        // Redirect on OK button click
+                        window.location.href = base_path + 'company/Mstoreuser/surplusstocklist';
+                    }
+                });
+            } else {
+                // If the status is not 'success', show an error message
+                swalWithBootstrapButtons.fire(
+                    'Error!',
+                    'There was an issue updating the surplus stock. Please try again.',
+                    'error'
+                );
+            }
+        },
+        error: function () {
+            // Handle AJAX error
+            console.log("Error");
+            swalWithBootstrapButtons.fire(
+                'Error!',
+                'There was an issue with the request. Please try again later.',
+                'error'
+            );
+        }
+    });
+}
+    
+    function getAmtToWords()
+    {
+        let tot = 0;
+        let curr = '';
+        let dc_data = dclist_vm.getData();
+        for (let i = 0; i < dc_data.length; i++) {
+            if(dc_data[i][16] > 0) {
+                tot = parseFloat(tot) +parseFloat(dc_data[i][18]) ;
+            }
+        }
+            
+        if(tot > 0) {
+            var num =numeral(tot).format('0.00');;
+            var splittedNum =num.toString().split('.')
+            var nonDecimal=splittedNum[0]
+            var decimal=splittedNum[1]
+            //console.log(num);
+            if(decimal > 0) {
+                var value="Rupees"+" "+price_in_words(Number(nonDecimal))+" and Paise"+price_in_words(decimal)+" "+"Only";
+            } else {
+                var value="Rupees"+" "+price_in_words(Number(nonDecimal))+" "+"Only";
+            }
+            $('#amount_in_words').val(value);
+        } else {
+            var num =numeral(tot).format('0.00');;
+            var splittedNum =num.toString().split('.')
+            var nonDecimal=splittedNum[0]
+            var decimal=splittedNum[1]
+            //console.log(num);
+            if(decimal > 0) {
+                var value="Rupees"+" "+price_in_words(Number(nonDecimal))+" and Paise"+price_in_words(decimal)+" "+"Only";
+            } else {
+                var value="Rupees"+" "+price_in_words(Number(nonDecimal))+" "+"Only";
+            }
+            $('#amount_in_words').val(value);
+        }
+        
+        
+        
+    }
+    
+    function price_in_words(price) {
+    var sglDigit = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+    dblDigit = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"],
+    tensPlace = ["", "Ten", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
+    handle_tens = function(dgt, prevDgt) {
+      return 0 == dgt ? "" : " " + (1 == dgt ? dblDigit[prevDgt] : tensPlace[dgt])
+    },
+    handle_utlc = function(dgt, nxtDgt, denom) {
+      return (0 != dgt && 1 != nxtDgt ? " " + sglDigit[dgt] : "") + (0 != nxtDgt || dgt > 0 ? " " + denom : "")
+    };
+
+  var str = "",
+    digitIdx = 0,
+    digit = 0,
+    nxtDigit = 0,
+    words = [];
+  if (price += "", isNaN(parseInt(price))) str = "";
+  else if (parseInt(price) > 0 && price.length <= 10) {
+    for (digitIdx = price.length - 1; digitIdx >= 0; digitIdx--) switch (digit = price[digitIdx] - 0, nxtDigit = digitIdx > 0 ? price[digitIdx - 1] - 0 : 0, price.length - digitIdx - 1) {
+      case 0:
+        words.push(handle_utlc(digit, nxtDigit, ""));
+        break;
+      case 1:
+        words.push(handle_tens(digit, price[digitIdx + 1]));
+        break;
+      case 2:
+        words.push(0 != digit ? " " + sglDigit[digit] + " Hundred" + (0 != price[digitIdx + 1] && 0 != price[digitIdx + 2] ? " and" : "") : "");
+        break;
+      case 3:
+        words.push(handle_utlc(digit, nxtDigit, "Thousand"));
+        break;
+      case 4:
+        words.push(handle_tens(digit, price[digitIdx + 1]));
+        break;
+      case 5:
+        words.push(handle_utlc(digit, nxtDigit, "Lakh"));
+        break;
+      case 6:
+        words.push(handle_tens(digit, price[digitIdx + 1]));
+        break;
+      case 7:
+        words.push(handle_utlc(digit, nxtDigit, "Crore"));
+        break;
+      case 8:
+        words.push(handle_tens(digit, price[digitIdx + 1]));
+        break;
+      case 9:
+        words.push(0 != digit ? " " + sglDigit[digit] + " Hundred" + (0 != price[digitIdx + 1] || 0 != price[digitIdx + 2] ? " and" : " Crore") : "")
+    }
+    str = words.reverse().join("")
+  } else str = "";
+  return str
+
+}
+
+function price_in_words1(price) {
+    var sglDigit = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+    handle_utlc = function(dgt, nxtDgt, denom) {
+      return ( 1 != nxtDgt ? " " + sglDigit[dgt] : "") 
+    };
+
+  var str = "",
+    digitIdx = 0,
+    digit = 0,
+    nxtDigit = 0,
+    words = [];
+  if (price += "", isNaN(parseInt(price))) str = "";
+  else if (parseInt(price) > 0 && price.length <= 2) {
+    for (digitIdx = price.length - 1; digitIdx >= 0; digitIdx--) switch (digit = price[digitIdx] - 0, nxtDigit = digitIdx > 0 ? price[digitIdx - 1] - 0 : 0, price.length - digitIdx - 1) {
+      case 0:
+        words.push(handle_utlc(digit, nxtDigit, ""));
+        break;
+      case 1:
+        words.push(handle_utlc(digit, price[digitIdx + 1]));
+        break;
+    }
+    str = words.reverse().join("")
+  } else str = "";
+  return str
+
+}
+    
+
+});

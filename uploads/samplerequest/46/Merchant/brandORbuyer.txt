@@ -1,0 +1,11 @@
+Brand NameGucci
+Contact Details
+Contact NameJohn
+Contact DesignationExecutive
+Contact Number9988998899
+Mobile Number6565323265
+Buyer NameGucci Sales Corporation
+
+Email Idgucci@gmail.com
+AddressAdd 12345
+StatusActive

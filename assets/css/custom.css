@@ -1,0 +1,948 @@
+    /* @import url("https://use.fontawesome.com/releases/v5.13.0/css/all.css"); */
+/* @import url("https://fontawesome.com/v4.7/assets/font-awesome/css/font-awesome.css"); */
+.brd-btm-thm {
+    border-bottom: 2px solid #022B61;
+}
+
+.thm-submit-btn {
+    background: #022b61;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+    font-size: 14px;
+    padding: 5px 30px;
+    text-transform: capitalize !important;
+}
+
+.form-control {
+    /*border-radius: 20px !important;*/
+     border-radius: 3px !important;
+}
+
+.no-rad-form .form-control {
+    /*border-radius: 0.125rem !important;*/
+    border-radius: 3px !important;
+}
+
+.tbl-head {
+    background-color: #022b61 !important;
+}
+
+.text-white {
+    color: #ffffff;
+}
+
+.card-toolbar-btn {
+    font-size: 14px;
+}
+
+.bgc-primary-d2 {
+    background-color: #022b61 !important;
+}
+
+.pag-active {
+    background-color: #022b61 !important;
+    border-color: #022b61 !important;
+    color: #ffffff !important;
+}
+
+.jexcel>tbody>tr>td {
+    white-space: normal !important;
+}
+
+td.readonly {
+    background: rgb(247 247 247 / 45%);
+}
+
+/* .jexcel > tbody > tr > td.readonly {
+    background: black;
+} */
+
+.search-div {
+    display: flex;
+    align-items: center;
+}
+
+.btn-cus-purple {
+    color: #fff;
+    background-color: #022b61;
+    border-color: #022b61;
+}
+
+#fabric_cost_grid .jexcel_content table>tbody>tr>td:nth-child(2) {
+    text-align: left !important;
+}
+
+#fabric_cost_grid .jexcel_content table>tbody>tr>td:not(:nth-child(2)) {
+    text-align: right !important;
+}
+
+#fabric_cost_grid .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+#actual_cost_grid .jexcel_content table>tbody>tr>td:nth-child(2),
+#actual_cost_grid .jexcel_content table>tbody>tr>td:nth-child(16) {
+    text-align: left !important;
+}
+
+#actual_cost_grid .jexcel_content table>tbody>tr>td {
+    text-align: right !important;
+}
+
+#actual_cost_grid .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+#isr_proft_per_grid .jexcel_content table>tbody>tr>td:nth-child(4) {
+    text-align: left !important;
+}
+
+#isr_proft_per_grid .jexcel_content table>tbody>tr>td {
+    text-align: right !important;
+}
+
+#isr_proft_per_grid .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+#ior_budgeted_grid .jexcel_content table>tbody>tr>td:nth-child(4),
+#ior_budgeted_grid .jexcel_content table>tbody>tr>td:nth-child(10) {
+    text-align: left !important;
+}
+
+#ior_budgeted_grid .jexcel_content table>tbody>tr>td {
+    text-align: right !important;
+}
+
+#ior_budgeted_grid .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+select,
+option {
+    text-transform: capitalize !important;
+}
+
+.form-control:focus {
+    /* box-shadow: 0 0 0 2px rgb(245 153 66 / 20%); */
+    box-shadow: 0 0 0 2px rgb(245 153 66 / 20%) !important;
+    color: #696969;
+    border-color: #F59942 !important;
+    background-color: #fff;
+    outline: none;
+}
+
+.ajax-file-upload-statusbar {
+    float: left;
+    width: 300px !important;
+    height: 85px;
+    max-height: 85px;
+    border: none;
+    box-shadow: rgb(149 157 165 / 20%) 0px 8px 24px;
+    padding: 20px;
+}
+
+
+.btn-info {
+    background-color: #008BFE !important;
+    border-color: #008BFE !important;
+}
+
+.btn-info:hover {
+    background-color: #055EE1 !important;
+    border-color: #055EE1 !important;
+}
+
+.ajax-file-upload {
+    background: #FF9900;
+}
+
+.ajax-file-upload:hover {
+    background: #F79000;
+    box-shadow: 0 2px 0 0 #F79000;
+}
+
+::placeholder {
+    color: #9999a3 !important;
+}
+
+.search-date {
+    width: 105px !important;
+}
+
+.datepicker .datepicker-days .table-condensed thead {
+    background-color: #ffffff;
+}
+
+td.sorting_1 {
+    text-align: center;
+}
+
+/* start */
+.datepicker-switch,
+th.dow,
+td.day {
+    font-size: 14px;
+    color: #333333;
+}
+
+th.datepicker-switch:hover {
+    background: transparent !important;
+}
+
+.datepicker.datepicker-dropdown.dropdown-menu.datepicker-orient-left {
+    padding: 15px;
+}
+
+.mar-l-rem {
+    margin-left: 1rem;
+}
+
+.mar-r-rem {
+    margin-right: 1rem;
+}
+
+.mar-l-5rem {
+    margin-left: 5rem;
+}
+
+.mar-lr-10 {
+    margin: 0 10px;
+}
+
+.bf-af-pg {
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* .select-wrap-zi > select {
+    border: 1px solid #d3d5d7;
+    padding-left: 12px !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+ }
+
+ .select-wrap-zi:after {
+    content: "\f2ba ";
+    font-family: "Font Awesome 5 Free";
+    color: #a4a4ad;
+    position: absolute;
+    right: 0;
+    top: 9px;
+    z-index: 1;
+    width: 10%;
+    height: 100%;
+    pointer-events: none;
+} */
+
+.jexcel>tbody>tr>td {
+    padding: 0px 10px;
+}
+
+.cus-sel {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url('../img/select.png') !important;
+    background-position-x: 0% !important;
+    background-position-y: 0% !important;
+    background-repeat: repeat !important;
+    background-repeat: no-repeat !important;
+    background-position: 97% 45% !important;
+    background-size: 14px;
+}
+
+.app-none {
+    background-image: none !important;
+}
+
+#frmBasicPs,
+#frmBasicCurrency {
+    background-position: 93% 45% !important;
+}
+
+/**************** GLOBAL CSS STARTS HERE ******************** */
+.pad-l-0-i {
+    padding-left: 0px !important;
+}
+
+.pad-l-15-i {
+    padding-left: 15px !important;
+}
+
+/**************** GLOBAL CSS ENDS HERE ******************** */
+
+/**************** SELECT2 CSS STARTS HERE ******************** */
+
+.select2-container {
+    /* height: 32.5px; */
+}
+
+.select2-results__option {
+    padding: 4px 8px !important;
+}
+
+.select2-container .select2-selection--single {
+    height: auto !important;
+    font-size: 13px;
+}
+
+.select2-container .select2-selection {
+    border-color: #d3d5d7 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #00050b !important;
+    padding: 6px 12px 6px 8.8px;
+    line-height: 1.5 !important;
+}
+
+
+
+.select2-container.select2-container--focus .select2-selection,
+.select2-container .select2-selection[aria-expanded="true"] {
+    /*border-color: #F59942;*/
+      border-color:#F59942 !important;
+    box-shadow: 0 0 0 2px rgb(245 153 66 / 20%) !important;
+}
+
+.select2-container--default .select2-results__option[aria-selected="true"]:hover {
+    background-color: #ebecec;
+    color: #00050b;
+}
+
+.select2-container--open .select2-dropdown {
+    border-color: #d3d5d7;
+    top: 7%;
+}
+
+.select2-search:before {
+    display: none;
+}
+
+.select2-container--default .select2-results__option[aria-selected="true"],
+.select2-results__option {
+    color: #00050b;
+}
+
+.arrow-select2-ji {
+    background-image: url(../img/select.png) !important;
+    background-repeat: no-repeat !important;
+    height: 33.5px;
+    width: 18px;
+    top: 10px;
+    right: 5px;
+    display: inline-block;
+    position: absolute;
+}
+
+/**************** SELECT2 CSS ENDS HERE ******************** */
+
+/**************** DATEPICKER CSS STARTS HERE ******************** */
+.datepicker .datepicker-switch,
+.datepicker .next,
+.datepicker .prev,
+.datepicker tfoot tr th {
+    color: #1d73e9;
+}
+
+.datepicker .datepicker-switch:hover,
+.datepicker .next:hover,
+.datepicker .prev:hover,
+.datepicker tfoot tr th:hover {
+    background: #ffffff;
+}
+
+.datepicker .prev,
+.datepicker .next {
+    color: #FF9900;
+}
+
+/**************** DATEPICKER CSS ENDS HERE ******************** */
+
+/**************** ADD ENQUIRY CSS STARTS HERE ******************** */
+.mar-b-2-p {
+    margin-bottom: 2%;
+}
+
+.add-form-mar {
+    margin: 0px 15px;
+}
+
+/**************** ADD ENQUIRY CSS ENDS HERE ******************** */
+
+/**************** JEXCEL CSS STARTS HERE ******************** */
+.jexcel>tbody>tr>td.jexcel_dropdown,
+.jdropdown-header {
+   
+    background-position: top 50% right 5px !important;
+}
+/* .jdropdown-header {
+    background-image: url(../img/select.png) !important;
+    background-position: top 50% right 5px !important;
+} */
+
+.jexcel_content table>tbody>tr>td,
+.jexcel_content table>tfoot>tr>td {
+    padding-right: 10px;
+}
+
+/**************** JEXCEL CSS ENDS HERE ******************** */
+
+/**************** PRE-COSTING CSS STARTS HERE ******************** */
+#actual_cost_grid tfoot>tr>td {
+    text-align: right !important;
+}
+
+/**************** PRE-COSTING CSS ENDS HERE ******************** */
+
+.garment_parts .jexcel_content table>tbody>tr>td:not(:nth-child(2)),
+.garment_parts .jexcel_content table>tbody>tr>td:not(:nth-child(3)) {
+    text-align: right !important;
+}
+
+.garment_parts .jexcel_content table>tbody>tr>td:nth-child(2),
+.garment_parts .jexcel_content table>tbody>tr>td:nth-child(3) {
+    text-align: left !important;
+}
+
+.garment_parts .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(2),
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(4),
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(6),
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(7) {
+    text-align: left !important;
+}
+
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(8),
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(9),
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(10),
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(11),
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(12),
+.yarn_cost_tbl .jexcel_content table>tbody>tr>td:nth-child(13) {
+    text-align: right !important;
+}
+
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(2),
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(4),
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(6),
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(7),
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(9),
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(10) {
+    text-align: left !important;
+}
+
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+/*.knitting_cost_grid .jexcel_content table > tbody > tr > td:nth-child(3),*/
+/*.knitting_cost_grid .jexcel_content table > tbody > tr > td:nth-child(5),*/
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(7),
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(11),
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(12),
+.knitting_cost_grid .jexcel_content table>tbody>tr>td:nth-child(13) {
+    text-align: right !important;
+}
+
+.emp_cost_grid .jexcel_content table>tbody>tr>td:nth-child(2),
+.emp_cost_grid .jexcel_content table>tbody>tr>td:nth-child(3),
+.emp_cost_grid .jexcel_content table>tbody>tr>td:nth-child(4),
+.emp_cost_grid .jexcel_content table>tbody>tr>td:nth-child(6) {
+    text-align: left !important;
+}
+
+.emp_cost_grid .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+.emp_cost_grid .jexcel_content table>tbody>tr>td:nth-child(7),
+.emp_cost_grid .jexcel_content table>tbody>tr>td:nth-child(8),
+.emp_cost_grid .jexcel_content table>tbody>tr>td:nth-child(9) {
+    text-align: right !important;
+}
+
+.bom_art_1 .jexcel_content table>tbody>tr>td:nth-child(2),
+.bom_art_2 .jexcel_content table>tbody>tr>td:nth-child(2),
+.bom_art_1 .jexcel_content table>tbody>tr>td:nth-child(4),
+.bom_art_2 .jexcel_content table>tbody>tr>td:nth-child(4) {
+    text-align: left !important;
+}
+
+.bom_art_1 .jexcel_content table>tbody>tr>td:first-child,
+.bom_art_2 .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+.bom_art_1 .jexcel_content table>tbody>tr>td:nth-child(3),
+.bom_art_2 .jexcel_content table>tbody>tr>td:nth-child(3),
+.bom_art_1 .jexcel_content table>tbody>tr>td:nth-child(5),
+.bom_art_2 .jexcel_content table>tbody>tr>td:nth-child(5),
+.bom_art_1 .jexcel_content table>tbody>tr>td:nth-child(6),
+.bom_art_2 .jexcel_content table>tbody>tr>td:nth-child(6) {
+    text-align: right !important;
+}
+
+.cmt_cip_cost .jexcel_content table>tbody>tr>td:nth-child(2),
+.cmt_cip_cost .jexcel_content table>tbody>tr>td:nth-child(3) {
+    text-align: left !important;
+}
+
+.cmt_cip_cost .jexcel_content table>tbody>tr>td:first-child {
+    text-align: center !important;
+}
+
+.cmt_cip_cost .jexcel_content table>tbody>tr>td:nth-child(4),
+.cmt_cip_cost .jexcel_content table>tbody>tr>td:nth-child(5),
+.cmt_cip_cost .jexcel_content table>tbody>tr>td:nth-child(6) {
+    text-align: right !important;
+}
+
+.other_exp_grid .jexcel_content table>tbody>tr>td:nth-child(2)
+ {
+    text-align: left !important;
+}
+
+.other_exp_grid .jexcel_content table>tbody>tr>td:first-child,
+.other_exp_grid .jexcel_content table>tbody>tr>td:nth-child(4),
+.other_exp_grid .jexcel_content table>tbody>tr>td:nth-child(5),
+.other_exp_grid .jexcel_content table>tbody>tr>td:nth-child(6){
+    text-align: center !important;
+}
+
+.other_exp_grid .jexcel_content table>tbody>tr>td:nth-child(3),
+/*.other_exp_grid .jexcel_content table>tbody>tr>td:nth-child(4),*/
+/*.other_exp_grid .jexcel_content table>tbody>tr>td:nth-child(6),*/
+.other_exp_grid .jexcel_content table>tbody>tr>td:nth-child(7) {
+    text-align: right !important;
+}
+
+.jexcel>tfoot>tr>td {
+    text-align: right !important;
+}
+
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(2),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(3),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(5),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(8) {
+    text-align: left !important;
+}
+
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(9),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(10),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(11),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(12),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(13),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(14),
+.dying_cost_grid_combo .jexcel_content table>tbody>tr>td:nth-child(15) {
+    text-align: right !important;
+}
+
+.dying_cost_avg_grid .jexcel_content table>tbody>tr>td:nth-child(2) {
+    text-align: left !important;
+}
+
+.dying_cost_avg_grid .jexcel_content table>tbody>tr>td:not(:nth-child(2)) {
+    text-align: right !important;
+}
+
+.jexcel_container {
+    padding-right: 0px !important;
+}
+
+/* 11-10-2021-el */
+
+.nrml-slt-inp+.select2-container .select2-selection {
+    /*border-radius: 20px !important;*/
+    border-radius: 3px !important;
+    height: 30px !important;
+    margin-top: 6px;
+    padding: 3px !important;
+}
+
+.nrml-slt-inp+.select2-container {
+    width: 100% !important;
+}
+
+.nrml-arw-slt {
+    top: 13px;
+}
+
+.nrml-slt-inp-sts+.select2-container .select2-selection {
+    /*border-radius: 20px !important;*/
+     border-radius: 3px !important;
+    height: 30px !important;
+    padding: 3px !important;
+}
+
+.nrml-slt-inp-sts+.select2-container {
+    width: 85px !important;
+}
+
+.nrml-slt-inp-sts+.select2-container .nrml-arw-slt {
+    top: 7px;
+}
+
+.nrml-slt-inp-sts+.select2-container .select2-selection__placeholder {
+    color: #022B61 !important;
+}
+
+.skin-black .main-header>.navbar .nav>li>a:hover,
+.skin-black .main-header>.navbar .nav>li>a:active,
+.skin-black .main-header>.navbar .nav>li>a:focus,
+.skin-black .main-header>.navbar .nav .open>a,
+.skin-black .main-header>.navbar .nav .open>a:hover,
+.skin-black .main-header>.navbar .nav .open>a:focus,
+.skin-black .main-header>.navbar .nav>.active>a {
+    background-color: #022B61 !important;
+    color: #ffffff !important;
+}
+
+/**************** LOADING CSS STARTS HERE ******************** */
+.loading {
+    position: fixed;
+    z-index: 99999;
+    overflow: show;
+    margin: auto;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 50px;
+    height: 50px;
+}
+
+.loading:before {
+    content: '';
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color:rgb(255 255 255 / 80%);
+}
+
+.loading:not(:required) {
+    font: 0/0 a;
+    color: transparent;
+    text-shadow: none;
+    background-color: transparent;
+    border: 0;
+}
+
+.loading:not(:required):after {
+    content: '';
+    display: block;
+    font-size: 10px;
+    width: 50px;
+    height: 50px;
+    margin-top: -0.5em;
+
+    border: 5px solid #145ca4;
+    border-radius: 100%;
+    border-bottom-color: transparent;
+    -webkit-animation: spinner 1s linear 0s infinite;
+    animation: spinner 1s linear 0s infinite;
+
+
+}
+
+@-webkit-keyframes spinner {
+    0% {
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -ms-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+        -ms-transform: rotate(360deg);
+        -o-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+@-moz-keyframes spinner {
+    0% {
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -ms-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+        -ms-transform: rotate(360deg);
+        -o-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+@-o-keyframes spinner {
+    0% {
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -ms-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+        -ms-transform: rotate(360deg);
+        -o-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spinner {
+    0% {
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -ms-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+        -ms-transform: rotate(360deg);
+        -o-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+/**************** LOADING CSS ENDS HERE ******************** */
+
+.file-viwer-jig {
+    float: left;
+   
+    width: 180px !important;
+    height: 85px;
+    border: none;
+    box-shadow: rgb(149 157 165 / 20%) 0px 8px 24px;
+    padding: 10px;
+    margin: 10px 10px;
+}
+
+.upload-jig-btn {
+    border: 2px dotted #cecece;
+    width: 100% !important;
+    color: #DADCE3;
+    text-align: left;
+    padding: 10px;
+}
+
+.upload-list-view {
+    padding-left: 15px;
+    width: 100%;
+}
+
+.upload-action-btn {
+    margin-top: 18px;
+}
+
+.upload-action-btn a {
+    padding-right: 10px;
+}
+
+.upload-action-btn a>i {
+    font-size: 15px;
+    color: #055ee1;
+}
+
+/* 11-oct-2021 */
+
+.jexcel > tbody > tr > td {
+    height: 37px!important;
+    color: black !important;
+    font-size: 12px;
+}
+
+.btn-blue-submit{
+    background-color: #4188b3;
+    color: white;
+    border-color: #4188b3;
+    font-weight: 600 !important;
+}
+
+/* OTP input */
+    
+#otp-input .otp-input {
+    margin: 0 5px;
+    text-align: center;
+    line-height: 80px;
+    font-size: 50px;
+    border: solid 1px #ccc;
+    box-shadow: 0 0 5px #ccc inset;
+    outline: none;
+    width: 20%;
+    transition: all .2s ease-in-out;
+    border-radius: 3px;
+}
+      
+#otp-input .otp-input:focus {
+    border-color: purple;
+    box-shadow: 0 0 5px purple inset;
+}
+
+#otp-input .otp-input::selection {
+    background: transparent;
+}
+
+.mar-b-20 {
+    margin-bottom: 20px;
+}
+
+.select2-container--default.select2-container--disabled .select2-selection--single {
+    /*background-color: #f5f5f5 !important;*/
+    background-color: #eee !important;
+    cursor:not-allowed!important;
+}
+
+.no-attach-fnd {
+    border: 2px dotted #cecece;
+    padding: 15px;
+}
+
+.dataTables_wrapper table.dataTable tr.even {
+    background-color: #f7f7f7;
+}
+
+.dataTables_wrapper table.dataTable tr.odd {
+    background-color: #ffffff;
+}
+
+.jexcel > thead > tr > td{
+    text-align: center!important;
+}
+
+
+.txt-upcs {
+    text-transform: uppercase;
+}
+
+
+#comboColourSizeSheet .jexcel_content table>tfoot>tr>td:last-child,
+#poSizeWiseSheet .jexcel_content table>tfoot>tr>td:last-child,
+#poWiseDelivery .jexcel_content table>tfoot>tr>td:nth-child(9) {
+    text-align: center !important;
+}
+
+.d-none{
+    display: none!important;
+}
+
+.jexcel_content {
+    max-height: unset!important;
+}
+
+.upper-case{
+    text-transform: uppercase;
+}
+
+.nav-tabs.fabric>li {
+    flex: auto;
+}
+
+.nav-pills.main-head > li > a {
+    padding: 10px 30px;
+}
+
+input[type=radio] {
+    margin: 0 7px 0 0!important;
+}
+
+.dis-flx-cen{
+    display: flex;
+    align-items: center;
+}
+
+.cus-radio-btn {
+    height: 20px;
+    width: 20px;
+}
+
+.h-60 {
+    height: 60px!important;
+}
+
+.h-70 {
+    height: 70px!important;
+}
+
+.dc-sign {
+    display: block;
+    width: 100%;
+}
+
+.cus-dc-p{
+     font-size: 18px;
+     font-weight: bold;
+     padding: 10px;
+}
+
+.dc-txt-area {
+    height: 70px;
+    width: 100%;
+    resize: none;
+}
+
+.dc-name {
+    position: absolute;
+    bottom: 15px;
+    /* padding: 0 0 0 2px; */
+}
+
+.dc-input {
+    position: absolute;
+    bottom: 25px;
+    width: 80%;
+    padding: 0 0 0 2px;
+}
+
+.bom-p-r {
+    text-align: right;
+    width: 100%;
+    right: 15px;
+}
+
+.w100-input {
+    width: calc(100vw - 200px);
+}
+
+.jexcel-ht {
+    max-height: 620px;
+}
+
+.input-bb-sty {
+    border: unset;
+    border-bottom: 2px solid #e0e0e0;
+    outline: unset;
+}
+.text-heading{
+    font-size:16px!important;
+    color: #0036ae!important;
+    font-weight:600;
+}
+input[type=checkbox]{
+    margin:7px 0 7px!important;
+}
+.labelclr {
+    color:#022b61!important;
+}
+

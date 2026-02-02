@@ -1,0 +1,7 @@
+1. Goto C:\Users\KAMALAKANNAN-PC.DESKTOP-T859O7L\.PhpStorm2018.2\config\eval
+   and delete this - PhpStorm182.evaluation file
+2. Goto C:\Users\KAMALAKANNAN-PC.DESKTOP-T859O7L\.PhpStorm2018.2\config\options
+   and delete this - options file
+3. Now open registry by entering regedit
+   regedit - Computer\HKEY_CURRENT_USER\Software\JavaSoft\Prefs\jetbrains\phpstorm
+   delete below folder

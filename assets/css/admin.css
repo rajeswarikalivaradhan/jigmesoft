@@ -1,0 +1,58 @@
+    .invoice{
+        margin:50px 13px!important;
+    }
+    .text-royal-black {
+        font-weight: 600;
+        font-family:"Helvetica Neue",Helvetica,Arial!important;
+        color: #022B61 !important;
+    }
+    #custom_form {
+        background: #F7F7F7;
+        /*padding: 18px;*/
+        padding: 18px 18px 3px 18px;
+    }
+    .mandatory{
+        color: red;
+    }
+    .page-header {
+        margin: 10px 0 10px 0!important;
+        font-size: 20px!important;
+    }
+    .btn-green {
+        color: #fff!important;
+        background-color: #29916c!important;
+        border-color: #29916c!important;
+        font-size:15px!important;
+    }
+    .btn-red {
+        color: #fff!important;
+        background-color: #eb4343!important;
+        border-color: #eb4343!important;
+        font-size:15px!important;
+    }
+    .swal2-title {
+        font-size: 21px!important;
+    }
+    .btn.btn-info{
+        font-size:12px!important;
+    }
+    .no-sort::after { 
+        display: none!important;
+    }
+    .no-sort {
+        pointer-events: none!important;
+        cursor: default!important;
+        opacity:0; 
+    }
+    label{
+        font-weight:normal!important;
+        color:#022b61!important;
+        font-size:12px!important;
+    }
+    .form-horizontal .control-label {
+        padding-top:7px!important;
+    }
+    .theadstyle{
+      font-weight:normal!important;
+      color:#022B61 !important;
+    }
