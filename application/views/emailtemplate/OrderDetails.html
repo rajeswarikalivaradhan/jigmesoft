@@ -1,0 +1,42 @@
+<table style="font-family:Tahoma, Arial, sans-serif; font-size:12px;color:#575757;line-height:20px;width:100%">
+    <tr>
+        <td colspan="2">
+            <p><b>Dear ##NAME##,</b></p>
+            <p style="color:green;font-size:14px;">Order Successfully Placed</p>
+        </td>
+    </tr>
+    <tr >
+        <td valign="top" style="padding-top:0px;">
+            <div style="text-transform: uppercase;color:orange;font-size:14px;">Order Details</div>
+            <p><b>Order ID :</b><br />##ORDERID##</p>
+            <p><b>Date :</b><br />##ORDERDATE##</p>
+            <div style="text-transform: uppercase;color:orange;font-size:14px;">Payment Details</div>
+            <p><b>Amount Paid :</b><br />##PAIDAMOUNT##</p>
+        </td>
+        <td valign="top">
+            <div style="text-transform: uppercase;color:orange;font-size:14px;">Billing Details</div>
+            <p>##BILLINGADDRESS##</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="padding-top:10px">
+            <table style="font-size:13px;border:1px solid #eee;" cellspacing="0" cellpadding="5" width="100%">
+                <thead>
+                    <tr >
+                        <th style="text-align: left;border:1px solid #eee;">Image</th>
+                        <th style="text-align: left;border:1px solid #eee;">Product Name</th>
+                        <th style="text-align: left;border:1px solid #eee;">Sub Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                        ##PRODUCTINFO##
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p>Please <a href="##DOMAINURL##">click here</a> to login in the Emaildatabase.io</p>
+        </td>
+    </tr>
+</table>

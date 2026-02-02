@@ -1,0 +1,10 @@
+<?php
+define('FP_EXCESS_QTY','fp_excessqtypercent');
+define('FABRIC_PROGRAM_ALL_JXL','fabric_program_all_jxl');
+define('PLAN_FAB_WGT_SUBTOTAL','plan_fab_wgt_subtotal');
+define('YARN_DYE_STRIPS','yarn_dye_strips');
+define('SINGLE_DYE_BATH','single_dye_bath');
+define('YARN_DYEING_JACQUARD','yarn_dyeing_jacquard');
+define('FP_YARN_PROGRAM','fabric_yarn_program');
+define('FP_CONS_KNITTING_PROGRAM','fabric_knitting_program');
+define('FABRIC_PROGRAM_CUMULATIVE_FROM_OE','fabric_program_cumulative_from_oe');
