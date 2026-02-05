@@ -1935,5 +1935,41 @@ foreach ($data3 as $finish) {
         }
         return !empty($primaryId);
     }
+    public function gettest_process($enquiry_id, $component_id)
+    {
+   
+        $otherExp = $this->db->select('id,desc_name as name')->get_where('tbl_other_expenses_master', array('status' => 1))->result_array();
+        $ArrPcsOrSet = unserialize(ARRPCSSET);
+        $enquirysets=$this->db->select('pcsorset as id,totalcomponents as no_component,exporderqty as order_qty')->get_where('kn_order_enquiry',array('id'=>$enquiry_id))->result_array(); // getting pcs_set from enquiry
+        $pcs_set_name=$ArrPcsOrSet[$enquirysets[0]['id']];
+        $pcs_set_id=$enquirysets[0]['id']; // pcs_set_id from enquiry
+        $pcs_set=[];
+        $noofcomp=[array('id' => $enquirysets[0]['no_component'], 'name' => $enquirysets[0]['no_component'])];
+        $totorderqty=[array('id' => $enquirysets[0]['order_qty'], 'name' => $enquirysets[0]['order_qty'])];
+        foreach($ArrPcsOrSet as $key=>$value){
+            if($key==$pcs_set_id){
+               $pcs_set[]=array('id' => $key, 'name' => $value);
+            }
+        }
+        
+        $results = [
+            'column' => [
+                ['title' => 'Description', 'width' => '40%', 'type' => 'dropdown', 'source' => $otherExp, 'align' => 'center'],
+                ['title' => 'Total Cost (Rs)', 'width' => '15%', 'align' => 'center'],
+                ['title' => 'Total Order Qty.', 'width' => '15%','type' => 'dropdown', 'source' => $totorderqty,],
+                ['title'  => 'Pcs / Set', 'width'  => '15%','align'  => '', 'type'   => 'dropdown', 'source' =>$pcs_set
+                    // [
+                    //     ['id' => $pcs_set_id, 'name' => $pcs_set_name] // for showing this in to dynamic from enquiry 
+                    // ]
+                ],
+                ['title' => 'No.of Components','width' => '15%','type' => 'dropdown', 'source' =>$noofcomp, 'align' => 'center'],
+                ['title' => 'Average Cost Per Garment (Rs)', 'width' => '25%', 'align' => 'center', 'readOnly' => true],
+            ],
+            'data'   => $this->getOtherExpData($enquiry_id, $component_id)
+        ];
+
+        return $results;
+    
+    }
 
 }

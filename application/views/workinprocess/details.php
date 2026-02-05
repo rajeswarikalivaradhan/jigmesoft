@@ -450,7 +450,7 @@ option {
             <!-- *********************** WIP DETAILS START HERE ************************-->
             <div class="card-header pb-3 bgc-white border-0 " style="">
                 <div class="card-title f-20">
-                    <b style="font-size: 20px !important; padding-left: 5px; margin-left: 3px;color: #333">ORDER PROCESSING</b>
+                    <b style="font-size: 20px !important; padding-left: 5px; margin-left: 3px;color: #333">ORDER PROCESSING </b>
                 </div>
             </div>
             <div class="col-12 pb-3 px-0">
@@ -468,6 +468,7 @@ option {
                 <li><a data-toggle="tab" href="#final_inspection">FINAL INSPECTION</a></li>
                 <li><a data-toggle="tab" href="#documentation">DOCUMENTATION</a></li>
                 <li><a data-toggle="tab" href="#checklist">CHECKLIST</a></li>
+                <li><a data-toggle="tab" href="#testlist">TestList</a></li>
                 <div class="pull-right">
                 <a id="backbtns" class="btn custbtn btn-sm mx-3 btn-royal-blue btn-text-slide-x">Back</a>
                 </div>
@@ -504,6 +505,9 @@ option {
                 <div id="checklist" class="tab-pane fade">
                     <?php require('checklist.php'); ?>
                 </div>
+                <div id="testlist" class="tab-pane fade">
+                    <?php require('testlist.php'); ?>
+                </div>
             </div>
 
 
@@ -522,7 +526,8 @@ option {
     <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/bootstrap-datepicker.min.js"></script>
     <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/loadingoverlay.min.js"></script>
     <script type="text/javascript" src="<?php echo base_url(); ?>assets/ace/node_modules/sweetalert2/dist/sweetalert2.all.js"></script>
-   
+    <!-- Test Data -->
+    <script type="text/javascript" src="<?php echo base_url('assets/custom/products.js'); ?>"></script>
   
     
       <?php 
@@ -538,6 +543,8 @@ option {
         echo '<script type="text/javascript">console.log("Invalid user ID");</script>';
     }
 ?>
+
+
     <script type="text/javascript" src="<?php echo base_url(); ?>assets/custom/datepair.js"></script>
     <script>
         var enquiry_id = <?php echo $VarEnqId; ?>;

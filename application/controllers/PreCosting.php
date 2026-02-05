@@ -248,6 +248,9 @@ class PreCosting extends CI_Controller
             case 12:
                 $data = $this->preCostingModel->getdyeing_fabric_process($enqId, $component_id);
                 break;
+            case 13:
+                $data = $this->preCostingModel->gettest_process($enqId, $component_id);
+                break;    
         }
 
         echo json_encode($data);

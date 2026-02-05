@@ -336,7 +336,7 @@ $userType = $userInfo['usertype'];
                 <div class="tab-pane fade" id="test_content_<?= $component['component_id'] ?>" role="tabpanel"
                      aria-labelledby="test_<?= $component['component_id'] ?>">
                     <div class="mt-3 mb-2 pl-0 ml-2 text-royal-blue f-16">Test</div>
-                    <div  class="p-0 w-100 test_grid" id="test_grid_<?= $component['component_id'] ?>"></div>
+                    <div  class="p-0 w-100 other_exp_grid" id="test_grid_<?= $component['component_id'] ?>"></div>
                     <div class="col-12 text-right pr-3 py-3">
                         <button role="tab"
                                 onclick='$("#other_exp_<?= $component['component_id'] ?>").trigger("click")'
@@ -576,9 +576,10 @@ $userType = $userInfo['usertype'];
         $("#loadder").show();
         // alert(1);
         MakeAsynPostRequest(base_path + "preCosting/preCostingColumns", "enquiry_id=" + enquiry_id + '&component_id='+component_id + '&grid_unique_id=' + grid_unique_id, "json", function(data) {
+                console.log("preCostingColumns response:", data);
                 if (data.column.length)
                 {  
-                   let min_dimensions = (grid_name === "other_exp_grid") ? 4 : 5;
+                   let min_dimensions = (grid_name === "other_exp_grid" || grid_name === "test_grid") ? 4 : 5;
                    let options = {
                         data: data.data,
                         editable: false,
@@ -770,7 +771,7 @@ $userType = $userInfo['usertype'];
                                         instance.jexcel.options.data[row][col] = avg_cost_gm;
                                     }
                                 }
-                                 else if(grid_name === "test_grid")
+                                else if(grid_name === "test_grid")
                                 {
                                     if(col === 1)
                                     {  
@@ -2132,7 +2133,7 @@ $userType = $userInfo['usertype'];
               id = 11;
               break;
           case "test_grid":
-              id = 12;
+              id = 13;
               break;
             default:
               id = 1;
