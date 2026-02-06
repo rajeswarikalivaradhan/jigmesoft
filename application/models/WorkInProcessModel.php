@@ -4295,8 +4295,8 @@ if (!empty($sizeMaster)) {
                 // ****** IF ASSORT TYPE 7 AND 8 *****
                 if($type == "7") {
                     $finalData = [
-                        ['title' => "No. of item \n Per Master", 'width' => '10%', 'align'=> 'right', 'readOnly' => true],
-                        ['title' => "No. of Master \n Bag Per Carton", 'width' => '10%', 'align'=> 'right'],
+                        ['title' => "No. of item \n Per Master1", 'width' => '10%', 'align'=> 'right', 'readOnly' => true],
+                        ['title' => "No. of Master \n Bag Per Carton2", 'width' => '10%', 'align'=> 'right'],
                         ['title' => "Total No. of \n Item Per Carton", 'width' => '10%', 'align'=> 'right', 'readOnly' => true],
                     ];
                     $assortCoulmn = array_merge($assortCoulmn, $finalData);

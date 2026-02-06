@@ -106,6 +106,20 @@ $(document).ready(function () {
   function appendProductsGrid(data) {
     $("#productsGridSheet").html("");
 
+    let dd = [],
+      updatedRow = -1,
+      index = -1;
+
+    // Set Product column as dropdown with products list (when available)
+    if (
+      data.column &&
+      data.column[2] &&
+      (data.products_list || []).length > 0
+    ) {
+      data.column[2].type = "dropdown";
+      data.column[2].source = data.products_list;
+    }
+
     let products_grid = {
       data: data.data,
       columns: data.column,
@@ -113,6 +127,79 @@ $(document).ready(function () {
       allowDeleteColumn: false,
       allowInsertRow: true,
       allowInsertColumn: false,
+      onchange: function (instance, cell, col, row, val, label, cellName) {
+        if (col == 2) {
+          updatedRow = row;
+          var txt = $(cell).text();
+          dd = products_grid.columns[2]["source"] || [];
+          if (txt != "") {
+            index = dd.findIndex(function (p) {
+              return (
+                txt.includes(p.name) ||
+                p.name === txt ||
+                String(p.id) === String(txt)
+              );
+            });
+            if (index >= 0) {
+              products_grid.data[row][1] = dd[index].id;
+              products_grid.data[row][2] = dd[index].name;
+              products_grid.data[row][3] = dd[index].category || "";
+              products_grid.data[row][4] =
+                dd[index].price !== undefined && dd[index].price !== null
+                  ? dd[index].price
+                  : "";
+              products_grid.data[row][5] =
+                dd[index].quantity !== undefined && dd[index].quantity !== null
+                  ? dd[index].quantity
+                  : "";
+            } else {
+              products_grid.data[row][3] = "";
+              products_grid.data[row][4] = "";
+              products_grid.data[row][5] = "";
+            }
+          } else {
+            products_grid.data[row][1] = "";
+            products_grid.data[row][3] = "";
+            products_grid.data[row][4] = "";
+            products_grid.data[row][5] = "";
+          }
+        }
+      },
+      updateTable: function (instance, cell, col, row, val, label, cellName) {
+        if (col == 2) {
+          val = $(cell).text();
+        }
+        if (col == 3) {
+          if (val != "" && dd.length > 0 && row == updatedRow && index >= 0) {
+            $(cell).text(dd[index]["category"] || "");
+          } else if (val == "") {
+            $(cell).text("");
+          }
+        }
+        if (col == 4) {
+          if (val != "" && dd.length > 0 && row == updatedRow && index >= 0) {
+            $(cell).text(
+              dd[index]["price"] !== undefined && dd[index]["price"] !== null
+                ? dd[index]["price"]
+                : ""
+            );
+          } else if (val == "") {
+            $(cell).text("");
+          }
+        }
+        if (col == 5) {
+          if (val != "" && dd.length > 0 && row == updatedRow && index >= 0) {
+            $(cell).text(
+              dd[index]["quantity"] !== undefined &&
+                dd[index]["quantity"] !== null
+                ? dd[index]["quantity"]
+                : ""
+            );
+          } else if (val == "") {
+            $(cell).text("");
+          }
+        }
+      },
     };
 
     products_grid_vm = new Vue({

@@ -120,6 +120,18 @@ class ProductsModel extends CI_Model
             ];
         }
 
+        // Products list for dropdown (active products only)
+        $products_list = $this->get_all(true);
+        $output['products_list'] = array_map(function ($p) {
+            return [
+                'id'       => (int) $p['product_id'],
+                'name'     => $p['product_name'],
+                'category' => $p['category'],
+                'price'    => $p['price'],
+                'quantity' => (int) $p['quantity'],
+            ];
+        }, $products_list);
+
         $output['column'] = [
             ['title' => "mode",        'width' => '10%', 'align' => 'center', 'type' => 'hidden'],
             ['title' => "id",          'width' => '10%', 'align' => 'center', 'type' => 'hidden'],
