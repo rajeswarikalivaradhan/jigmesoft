@@ -224,3 +224,9 @@ define('FPROGRAM_YARNREQUIREMENTDETAILS','fprogram_yarnrequirementdetails');*/
 //define('REVISED_RESCHEDULE_SHIPMENT', 'revised_reschedule_shipment');
 //define('GOODS_SHIPPED_SCHEDULE', 'goods_shipped_schedule');
 //define('KN_MASTER_ENQUIRY_TYPE','kn_master_enquiry_type');
+
+// Test list / File upload (WIP) - one row per grid row, uploaded_files as JSON
+define('KN_TESTLIST_DOCUMENT_UPLOADS', 'tbl_testlist_document_uploads');
+
+// Test list product lines per enquiry (product_id FK to products; quantity/total per line)
+define('KN_ENQUIRY_PRODUCTS', 'enquiry_products');

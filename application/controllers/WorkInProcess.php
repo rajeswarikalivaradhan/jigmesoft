@@ -604,6 +604,100 @@
     
         }
 
+        /**
+         * Upload multiple files for Test List; store in DB (one row per grid row, files as JSON).
+         * POST: enquiry_id, row_id (DB id, empty for new row), document_type, myFile[].
+         * Files saved to uploads/.../Enq_X/row_{id}/. Returns { status, id, files }.
+         */
+        public function uploadTestListDocument()
+        {
+            $enquiry_id    = (int) xssclean($this->input->post('enquiry_id'));
+            $row_id        = xssclean($this->input->post('row_id'));
+            $document_type = xssclean($this->input->post('document_type'));
+            $ArrExtensions = FILE_EXTENSIONS;
+
+            $row_id = ($row_id !== '' && $row_id !== null) ? (int) $row_id : null;
+            if ($row_id === null || $row_id < 1) {
+                $row_id = $this->WorkInProcessModel->insertTestListDocumentRow($enquiry_id, $document_type ?: '', array());
+            }
+
+            $filepath = 'uploads/workinprocess/testlist' . DIRECTORY_SEPARATOR . $this->subscriber_id . DIRECTORY_SEPARATOR . 'Enq_' . $enquiry_id . DIRECTORY_SEPARATOR . 'row_' . $row_id . DIRECTORY_SEPARATOR;
+            if (!is_dir($filepath)) {
+                mkdir($filepath, 0777, true);
+            }
+
+            $uploaded = array();
+            $files = isset($_FILES['myFile']) ? $_FILES['myFile'] : null;
+            if ($files && isset($files['name'])) {
+                $names = is_array($files['name']) ? $files['name'] : array($files['name']);
+                $tmp_names = is_array($files['tmp_name']) ? $files['tmp_name'] : array($files['tmp_name']);
+                $sizes = is_array($files['size']) ? $files['size'] : array($files['size']);
+                $errors = is_array($files['error']) ? $files['error'] : array($files['error']);
+
+                for ($i = 0; $i < count($names); $i++) {
+                    if (isset($errors[$i]) && $errors[$i] !== UPLOAD_ERR_OK) continue;
+                    $name = $names[$i];
+                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    if (!in_array($ext, $ArrExtensions)) continue;
+                    if (isset($sizes[$i]) && $sizes[$i] > MAXUPLSIZE) continue;
+
+                    $fName = pathinfo($name, PATHINFO_FILENAME);
+                    $fileName = preg_replace('/\s+/', '_', $fName) . '_' . rand() . '.' . $ext;
+                    $fileName = preg_replace('/[^A-Za-z0-9_\-\.]/', '', $fileName);
+                    $dest = $filepath . $fileName;
+                    if (move_uploaded_file($tmp_names[$i], $dest)) {
+                        $uploaded[] = $fileName;
+                    }
+                }
+            }
+
+            if (count($uploaded) > 0) {
+                $this->WorkInProcessModel->updateTestListDocumentRow($row_id, $enquiry_id, $document_type ?: '', $uploaded);
+            }
+
+            echo json_encode(array('status' => 'success', 'id' => $row_id, 'files' => $uploaded));
+        }
+
+        /**
+         * Get test list document rows from DB (one row per grid row, uploaded_files as JSON).
+         * GET/POST: enquiry_id. Returns { "base_url": "...", "rows": [ { "id", "document_type", "uploaded_files": [] }, ... ] }.
+         */
+        public function getTestListDocuments()
+        {
+            $enquiry_id = (int) xssclean($this->input->get_post('enquiry_id'));
+            $rel_path = 'uploads/workinprocess/testlist/' . str_replace(DIRECTORY_SEPARATOR, '/', $this->subscriber_id) . '/Enq_' . $enquiry_id . '/';
+            $result = array(
+                'base_url' => base_url() . $rel_path,
+                'rows' => $this->WorkInProcessModel->getTestListDocumentRows($enquiry_id)
+            );
+            echo json_encode($result);
+        }
+
+        /**
+         * Save file upload grid: update document_type for each row. POST: enquiry_id, data (JSON array of [id, document_type] per row).
+         */
+        public function saveTestListDocuments()
+        {
+            $enquiry_id = (int) xssclean($this->input->post('enquiry_id'));
+            $raw = xssclean($this->input->post('data'));
+            $rows = json_decode($raw, true);
+            if (!is_array($rows)) {
+                echo json_encode(array('status' => 'error', 'msg' => 'Invalid data'));
+                return;
+            }
+            foreach ($rows as $row) {
+                $id = isset($row[0]) ? $row[0] : '';
+                $doc_type = isset($row[1]) ? $row[1] : '';
+                $id = ($id !== '' && $id !== null) ? (int) $id : 0;
+                if ($id > 0) {
+                    $this->WorkInProcessModel->updateTestListDocumentType($id, $enquiry_id, $doc_type);
+                } elseif ($doc_type !== '') {
+                    $this->WorkInProcessModel->insertTestListDocumentRow($enquiry_id, $doc_type, array());
+                }
+            }
+            echo json_encode(array('status' => 'success', 'msg' => 'Saved successfully'));
+        }
+
         public function updateWipRemarksDetails()
         {
             $data = $this->input->post();

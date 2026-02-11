@@ -176,7 +176,7 @@ $userType = $userInfo['usertype'];
             <div class="tab-content p-0 border-0 brc-grey-l1" id="component_sub_tab_<?= $component['component_id'] ?>_content">
                 <div class="tab-pane fade active show" id="gar_pce_wgt_content_<?= $component['component_id'] ?>" role="tabpanel"
                      aria-labelledby="gar_pce_wgt_<?= $component['component_id'] ?>">
-                    <div class="mt-3 mb-2 pl-0 ml-2 text-royal-blue f-16">Garment Piece Weight</div>
+                    <div class="mt-3 mb-2 pl-0 ml-2 text-royal-blue f-16">Garment Piece Weight111</div>
                     <div id="garment_parts_<?= $component['component_id'] ?>" class="col-12 p-0 w-100 garment_parts"></div>
                     <div class="col-12 text-right pr-3 py-3">
                         <button class="btn btn-sm btn-royal-blue btn-text-slide-x px-3 pag-active">1</button>

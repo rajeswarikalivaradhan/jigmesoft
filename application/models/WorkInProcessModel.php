@@ -11476,5 +11476,94 @@ public function updateYarnProgrammeDetailss($req_data, $id)
         $tot = $this->db->where('enquiry_id',$enq_id)->where('req_sent_status',0)->get('tbl_sample_requirement')->num_rows();
         return $tot;
     }
+
+    /**
+     * Get test list document upload rows for an enquiry (one row per grid row, uploaded_files as JSON).
+     * @param int $enquiry_id
+     * @return array [ ['id'=>, 'document_type'=>, 'uploaded_files'=>[] ], ... ]
+     */
+    public function getTestListDocumentRows($enquiry_id)
+    {
+        $enquiry_id = (int) $enquiry_id;
+        $rows = $this->db->select('id, enquiry_id, document_type, uploaded_files')
+            ->from(KN_TESTLIST_DOCUMENT_UPLOADS)
+            ->where('enquiry_id', $enquiry_id)
+            ->order_by('id', 'ASC')
+            ->get()
+            ->result_array();
+        foreach ($rows as &$r) {
+            $r['uploaded_files'] = !empty($r['uploaded_files']) ? json_decode($r['uploaded_files'], true) : array();
+            if (!is_array($r['uploaded_files'])) {
+                $r['uploaded_files'] = array();
+            }
+        }
+        return $rows;
+    }
+
+    /**
+     * Insert new test list document row.
+     * @param int $enquiry_id
+     * @param string $document_type
+     * @param array $uploaded_files filenames
+     * @return int new id
+     */
+    public function insertTestListDocumentRow($enquiry_id, $document_type, $uploaded_files = array())
+    {
+        $data = array(
+            'enquiry_id'    => (int) $enquiry_id,
+            'document_type' => $document_type,
+            'uploaded_files' => json_encode($uploaded_files),
+            'created_at'    => $this->mysqldatetime,
+            'updated_at'    => $this->mysqldatetime
+        );
+        $this->db->insert(KN_TESTLIST_DOCUMENT_UPLOADS, $data);
+        return (int) $this->db->insert_id();
+    }
+
+    /**
+     * Update test list document row: set document_type and merge new files into uploaded_files JSON.
+     * @param int $id row id
+     * @param int $enquiry_id
+     * @param string $document_type
+     * @param array $new_files filenames to append
+     * @return bool
+     */
+    public function updateTestListDocumentRow($id, $enquiry_id, $document_type, $new_files = array())
+    {
+        $id = (int) $id;
+        $enquiry_id = (int) $enquiry_id;
+        $row = $this->db->select('uploaded_files')->get_where(KN_TESTLIST_DOCUMENT_UPLOADS, array('id' => $id, 'enquiry_id' => $enquiry_id))->row_array();
+        if (empty($row)) {
+            return false;
+        }
+        $existing = !empty($row['uploaded_files']) ? json_decode($row['uploaded_files'], true) : array();
+        if (!is_array($existing)) {
+            $existing = array();
+        }
+        $merged = array_merge($existing, $new_files);
+        $this->db->where(array('id' => $id, 'enquiry_id' => $enquiry_id));
+        $this->db->update(KN_TESTLIST_DOCUMENT_UPLOADS, array(
+            'document_type'  => $document_type,
+            'uploaded_files' => json_encode($merged),
+            'updated_at'     => $this->mysqldatetime
+        ));
+        return true;
+    }
+
+    /**
+     * Update only document_type for a row (e.g. on SAVE grid).
+     * @param int $id
+     * @param int $enquiry_id
+     * @param string $document_type
+     * @return bool
+     */
+    public function updateTestListDocumentType($id, $enquiry_id, $document_type)
+    {
+        $this->db->where(array('id' => (int) $id, 'enquiry_id' => (int) $enquiry_id));
+        return $this->db->update(KN_TESTLIST_DOCUMENT_UPLOADS, array(
+            'document_type' => $document_type,
+            'updated_at'    => $this->mysqldatetime
+        ));
+    }
     
 }

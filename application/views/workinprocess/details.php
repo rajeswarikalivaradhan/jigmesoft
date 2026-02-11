@@ -528,9 +528,8 @@ option {
     <script type="text/javascript" src="<?php echo base_url(); ?>assets/ace/node_modules/sweetalert2/dist/sweetalert2.all.js"></script>
     <!-- Test Data -->
     <script type="text/javascript" src="<?php echo base_url('assets/custom/products.js'); ?>"></script>
-  
-    
-      <?php 
+    <script type="text/javascript" src="<?php echo base_url('assets/custom/file_upload_grid.js'); ?>"></script>
+    <?php 
     if ($loguserid == 3) {
         echo' <script type="text/javascript" src="'. base_url() .'assets/custom/wipform.js"></script>';
         echo '<script type="text/javascript" src="' . base_url() . 'assets/custom/wipdetails.js"></script>';
@@ -548,6 +547,10 @@ option {
     <script type="text/javascript" src="<?php echo base_url(); ?>assets/custom/datepair.js"></script>
     <script>
         var enquiry_id = <?php echo $VarEnqId; ?>;
+        var base_path = '<?php echo base_url(); ?>';
+    </script>
+    <script type="text/javascript" src="<?php echo base_url('assets/custom/file_upload_grid.js'); ?>"></script>
+    <script>
         // *************** order entry tab panel previous and next trigger *************** 
         $('#backbtns').click(function () {
         let $active = $('.nav-pills > li.active');

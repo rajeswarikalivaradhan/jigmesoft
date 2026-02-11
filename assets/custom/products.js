@@ -120,13 +120,26 @@ $(document).ready(function () {
       data.column[2].source = data.products_list;
     }
 
+    function calcRowTotal(data, row) {
+      var p = parseFloat(data[row] && data[row][4]) || 0;
+      var q = parseInt(data[row] && data[row][5], 10) || 0;
+      return p * q;
+    }
+    // Footer row like Combo/Colour Wise: "Total:" on left, sum in Total column
+    function productsGridFooter() {
+      return [
+        ["", "", "", "", "", "Total:", '=SUMCOL(TABLE(), COLUMN(), "")', ""],
+      ];
+    }
+
     let products_grid = {
       data: data.data,
       columns: data.column,
-      minDimensions: [4, 1],
+      minDimensions: [8, 1],
       allowDeleteColumn: false,
       allowInsertRow: true,
       allowInsertColumn: false,
+      footers: productsGridFooter(),
       onchange: function (instance, cell, col, row, val, label, cellName) {
         if (col == 2) {
           updatedRow = row;
@@ -141,37 +154,57 @@ $(document).ready(function () {
               );
             });
             if (index >= 0) {
-              products_grid.data[row][1] = dd[index].id;
-              products_grid.data[row][2] = dd[index].name;
+              // Store product_id so dropdown shows selection after save/reload
+              products_grid.data[row][2] = dd[index].id;
               products_grid.data[row][3] = dd[index].category || "";
               products_grid.data[row][4] =
                 dd[index].price !== undefined && dd[index].price !== null
                   ? dd[index].price
                   : "";
-              products_grid.data[row][5] =
-                dd[index].quantity !== undefined && dd[index].quantity !== null
-                  ? dd[index].quantity
-                  : "";
+              // Quantity: user enters; Total = price * quantity
+              products_grid.data[row][5] = "";
             } else {
               products_grid.data[row][3] = "";
               products_grid.data[row][4] = "";
               products_grid.data[row][5] = "";
             }
           } else {
-            products_grid.data[row][1] = "";
             products_grid.data[row][3] = "";
             products_grid.data[row][4] = "";
             products_grid.data[row][5] = "";
           }
+          products_grid.data[row][6] = calcRowTotal(products_grid.data, row);
+        }
+        if (col == 4 || col == 5) {
+          products_grid.data[row][6] = calcRowTotal(products_grid.data, row);
         }
       },
       updateTable: function (instance, cell, col, row, val, label, cellName) {
         if (col == 2) {
           val = $(cell).text();
         }
+        var src =
+          products_grid.columns[2] && products_grid.columns[2].source
+            ? products_grid.columns[2].source
+            : [];
+        var rowProductId =
+          instance &&
+          instance.options &&
+          instance.options.data &&
+          instance.options.data[row]
+            ? instance.options.data[row][2]
+            : null;
+        var idxByLoad = -1;
+        if (rowProductId != null && rowProductId !== "" && src.length) {
+          idxByLoad = src.findIndex(function (p) {
+            return String(p.id) === String(rowProductId);
+          });
+        }
         if (col == 3) {
           if (val != "" && dd.length > 0 && row == updatedRow && index >= 0) {
             $(cell).text(dd[index]["category"] || "");
+          } else if (idxByLoad >= 0) {
+            $(cell).text(src[idxByLoad]["category"] || "");
           } else if (val == "") {
             $(cell).text("");
           }
@@ -181,23 +214,32 @@ $(document).ready(function () {
             $(cell).text(
               dd[index]["price"] !== undefined && dd[index]["price"] !== null
                 ? dd[index]["price"]
-                : ""
+                : "",
+            );
+          } else if (idxByLoad >= 0) {
+            $(cell).text(
+              src[idxByLoad]["price"] !== undefined &&
+                src[idxByLoad]["price"] !== null
+                ? src[idxByLoad]["price"]
+                : "",
             );
           } else if (val == "") {
             $(cell).text("");
           }
         }
         if (col == 5) {
-          if (val != "" && dd.length > 0 && row == updatedRow && index >= 0) {
-            $(cell).text(
-              dd[index]["quantity"] !== undefined &&
-                dd[index]["quantity"] !== null
-                ? dd[index]["quantity"]
-                : ""
-            );
-          } else if (val == "") {
+          // Quantity is user-entered only; do not fill from product dropdown
+          if (val == "") {
             $(cell).text("");
           }
+        }
+        if (col == 6) {
+          var gridData =
+            instance && instance.options && instance.options.data
+              ? instance.options.data
+              : products_grid.data;
+          var total = calcRowTotal(gridData, row);
+          $(cell).text(total > 0 ? total : "");
         }
       },
     };
@@ -231,13 +273,13 @@ $(document).ready(function () {
                 products_grid_vm.submitData();
               } else if (result.dismiss === Swal.DismissReason.cancel) {
                 swalWithBootstrapButtons.fire(
-                  alertMessageFunction("cancelled")
+                  alertMessageFunction("cancelled"),
                 );
               }
             });
         } else {
           swalWithBootstrapButtons.fire(
-            alertMessageFunction("validation_error")
+            alertMessageFunction("validation_error"),
           );
         }
       });
@@ -277,6 +319,14 @@ $(document).ready(function () {
     });
   }
 
-  // Initial load
-  getProductsGrid();
+  // Load products grid when TestList tab is shown (grid does not render when container is hidden)
+  $(document).on("shown.bs.tab", 'a[href="#testlist"]', function () {
+    if (!products_grid_vm || !products_grid_vm.getData) {
+      getProductsGrid();
+    }
+  });
+  // If TestList is already active on load (e.g. direct link), load immediately
+  if ($("#testlist").hasClass("active")) {
+    getProductsGrid();
+  }
 });
