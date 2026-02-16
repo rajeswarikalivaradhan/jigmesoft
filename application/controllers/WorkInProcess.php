@@ -695,14 +695,35 @@
                 echo json_encode(array('status' => 'error', 'msg' => 'Invalid data'));
                 return;
             }
+
+            $existingRows = $this->WorkInProcessModel->getTestListDocumentRows($enquiry_id);
+            $existingById = array();
+            foreach ($existingRows as $er) {
+                $existingById[(int) $er['id']] = $er;
+            }
+
+            $keepIds = array();
             foreach ($rows as $row) {
                 $id = isset($row[0]) ? $row[0] : '';
                 $doc_type = isset($row[1]) ? $row[1] : '';
                 $id = ($id !== '' && $id !== null) ? (int) $id : 0;
                 if ($id > 0) {
+                    $keepIds[] = $id;
                     $this->WorkInProcessModel->updateTestListDocumentType($id, $enquiry_id, $doc_type);
                 } elseif ($doc_type !== '') {
                     $this->WorkInProcessModel->insertTestListDocumentRow($enquiry_id, $doc_type, array());
+                }
+            }
+
+            // Remove rows deleted in grid so they do not reappear after save.
+            foreach ($existingById as $existingId => $existingRow) {
+                if (!in_array((int) $existingId, $keepIds, true)) {
+                    $this->deleteTestListRowArtifacts(
+                        $enquiry_id,
+                        (int) $existingId,
+                        isset($existingRow['document_type']) ? $existingRow['document_type'] : ''
+                    );
+                    $this->WorkInProcessModel->deleteTestListDocumentRow((int) $existingId, $enquiry_id);
                 }
             }
             echo json_encode(array('status' => 'success', 'msg' => 'Saved successfully'));
@@ -759,6 +780,35 @@
             echo json_encode(array('status' => 'success', 'msg' => 'File deleted', 'folder_deleted' => $folder_deleted));
         }
 
+        /**
+         * Delete one test-list row with its files/folder immediately.
+         * POST: enquiry_id, row_id
+         */
+        public function deleteTestListDocumentRow()
+        {
+            $enquiry_id = (int) xssclean($this->input->post('enquiry_id'));
+            $row_id = (int) xssclean($this->input->post('row_id'));
+            if ($enquiry_id < 1 || $row_id < 1) {
+                echo json_encode(array('status' => 'error', 'msg' => 'Invalid request'));
+                return;
+            }
+
+            $rowData = $this->WorkInProcessModel->getTestListDocumentRowById($row_id, $enquiry_id);
+            if (empty($rowData)) {
+                echo json_encode(array('status' => 'success', 'msg' => 'Already deleted'));
+                return;
+            }
+
+            $this->deleteTestListRowArtifacts(
+                $enquiry_id,
+                $row_id,
+                isset($rowData['document_type']) ? $rowData['document_type'] : ''
+            );
+            $this->WorkInProcessModel->deleteTestListDocumentRow($row_id, $enquiry_id);
+
+            echo json_encode(array('status' => 'success', 'msg' => 'Row deleted'));
+        }
+
         private function sanitizeFolderToken($value)
         {
             $value = strtolower(trim((string) $value));
@@ -788,6 +838,36 @@
                 return $legacy;
             }
             return $preferred;
+        }
+
+        private function deleteTestListRowArtifacts($enquiry_id, $row_id, $document_type)
+        {
+            $base_dir = 'uploads/workinprocess/testlist' . DIRECTORY_SEPARATOR . $this->subscriber_id . DIRECTORY_SEPARATOR . 'Enq_' . (int) $enquiry_id . DIRECTORY_SEPARATOR;
+            $paths = array(
+                $base_dir . $this->buildTestListFolderName($document_type, $row_id) . DIRECTORY_SEPARATOR,
+                $base_dir . 'row_' . (int) $row_id . DIRECTORY_SEPARATOR
+            );
+
+            foreach ($paths as $path) {
+                $this->deleteDirectoryRecursive($path);
+            }
+        }
+
+        private function deleteDirectoryRecursive($dir)
+        {
+            if (!is_dir($dir)) return;
+            $items = @scandir($dir);
+            if ($items === false) return;
+            foreach ($items as $item) {
+                if ($item === '.' || $item === '..') continue;
+                $full = $dir . $item;
+                if (is_dir($full)) {
+                    $this->deleteDirectoryRecursive($full . DIRECTORY_SEPARATOR);
+                } else {
+                    @unlink($full);
+                }
+            }
+            @rmdir($dir);
         }
 
         public function updateWipRemarksDetails()

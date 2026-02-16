@@ -10,6 +10,7 @@ $(document).ready(function () {
   var docBaseUrl = '';
   var currentUploadRow = -1;
   var fileUploadStateInterval = null;
+  var pendingDeleteRowIds = [];
 
   var DOCUMENT_TYPES = ['Spec Sheet', 'Test Report', 'Certificate', 'Other'];
 
@@ -73,6 +74,25 @@ $(document).ready(function () {
       allowInsertRow: true,
       allowDeleteColumn: false,
       allowInsertColumn: false,
+      onbeforedeleterow: function (instance, rowNumber, numOfRows) {
+        pendingDeleteRowIds = [];
+        var start = parseInt(rowNumber, 10);
+        var count = parseInt(numOfRows, 10);
+        if (isNaN(start) || start < 0) return true;
+        if (isNaN(count) || count < 1) count = 1;
+        for (var i = start; i < start + count; i++) {
+          var rid = file_upload_grid_vm && file_upload_grid_vm.getValueFromCoords ? file_upload_grid_vm.getValueFromCoords(0, i) : '';
+          rid = rid ? parseInt(rid, 10) : 0;
+          if (!isNaN(rid) && rid > 0) pendingDeleteRowIds.push(rid);
+        }
+        return true;
+      },
+      ondeleterow: function () {
+        if (pendingDeleteRowIds && pendingDeleteRowIds.length) {
+          deleteRowsImmediately(pendingDeleteRowIds.slice());
+        }
+        pendingDeleteRowIds = [];
+      },
       onchange: function (instance, cell, col, row) {
         if (col === 1 || col === 0) {
           setTimeout(function () { updateUploadViewRowState(row); }, 50);
@@ -333,6 +353,37 @@ $(document).ready(function () {
         error: function () {
           if (typeof Swal !== 'undefined') {
             Swal.fire({ title: 'Delete failed', text: 'Unable to delete file.', icon: 'error', customClass: { confirmButton: 'btn btn-info' } });
+          }
+        }
+      });
+    });
+  }
+
+  function deleteRowsImmediately(rowIdsToDelete) {
+    if (!rowIdsToDelete || !rowIdsToDelete.length) return;
+    var total = rowIdsToDelete.length;
+    var done = 0;
+    var hasError = false;
+
+    rowIdsToDelete.forEach(function (rid) {
+      $.ajax({
+        type: 'POST',
+        url: base_path + 'WorkInProcess/deleteTestListDocumentRow',
+        data: { enquiry_id: enquiry_id, row_id: rid },
+        dataType: 'json',
+        success: function (res) {
+          if (!res || res.status !== 'success') hasError = true;
+        },
+        error: function () {
+          hasError = true;
+        },
+        complete: function () {
+          done++;
+          if (done === total) {
+            if (hasError && typeof Swal !== 'undefined') {
+              Swal.fire({ title: 'Delete warning', text: 'Some row attachments could not be deleted fully.', icon: 'warning', customClass: { confirmButton: 'btn btn-info' } });
+            }
+            getFileUploadGrid();
           }
         }
       });

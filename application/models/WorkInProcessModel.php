@@ -11628,5 +11628,17 @@ public function updateYarnProgrammeDetailss($req_data, $id)
         }
         return $row;
     }
+
+    /**
+     * Delete one test-list upload row.
+     * @param int $id
+     * @param int $enquiry_id
+     * @return bool
+     */
+    public function deleteTestListDocumentRow($id, $enquiry_id)
+    {
+        $this->db->where(array('id' => (int) $id, 'enquiry_id' => (int) $enquiry_id));
+        return $this->db->delete(KN_TESTLIST_DOCUMENT_UPLOADS);
+    }
     
 }
