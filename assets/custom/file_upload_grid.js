@@ -257,8 +257,11 @@ $(document).ready(function () {
     $input.off('change.fileupload').on('change.fileupload', function () {
       var files = this.files;
       if (!files || files.length === 0 || currentUploadRow < 0) return;
+      var targetRow = currentUploadRow;
+      var existingFiles = (rowFiles[targetRow] || []).slice();
+      var selectedFileNames = [];
 
-      var docType = file_upload_grid_vm.getValueFromCoords(1, currentUploadRow);
+      var docType = file_upload_grid_vm.getValueFromCoords(1, targetRow);
       if (!docType || String(docType).trim() === '') {
         var invalidRow = currentUploadRow;
         this.value = '';
@@ -267,13 +270,21 @@ $(document).ready(function () {
         return;
       }
 
-      var rowId = file_upload_grid_vm.getValueFromCoords(0, currentUploadRow);
+      var rowId = file_upload_grid_vm.getValueFromCoords(0, targetRow);
       var formData = new FormData();
       formData.append('enquiry_id', enquiry_id);
       formData.append('row_id', rowId || '');
       formData.append('document_type', docType || '');
       for (var i = 0; i < files.length; i++) {
         formData.append('myFile[]', files[i]);
+        selectedFileNames.push(files[i].name);
+      }
+
+      // Enable View immediately after file selection for this row.
+      if (selectedFileNames.length) {
+        rowFiles[targetRow] = existingFiles.concat(selectedFileNames);
+        file_upload_grid_vm.setValueFromCoords(3, targetRow, 'View (' + rowFiles[targetRow].length + ')');
+        updateUploadViewRowState(targetRow);
       }
 
       $.ajax({
@@ -287,23 +298,31 @@ $(document).ready(function () {
         success: function (res) {
           if (res && res.status === 'success') {
             var id = res.id;
-            if (!rowFiles[currentUploadRow]) rowFiles[currentUploadRow] = [];
             if (res.files && res.files.length) {
-              rowFiles[currentUploadRow] = rowFiles[currentUploadRow].concat(res.files);
+              rowFiles[targetRow] = existingFiles.concat(res.files);
+            } else {
+              rowFiles[targetRow] = existingFiles;
             }
-            rowIds[currentUploadRow] = id;
-            rowFolderNames[currentUploadRow] = (res.folder_name || buildFolderName(docType, id));
-            file_upload_grid_vm.setValueFromCoords(0, currentUploadRow, id);
-            var label = 'View' + (rowFiles[currentUploadRow].length ? ' (' + rowFiles[currentUploadRow].length + ')' : '');
-            file_upload_grid_vm.setValueFromCoords(3, currentUploadRow, label);
-            updateUploadViewRowState(currentUploadRow);
+            rowIds[targetRow] = id;
+            rowFolderNames[targetRow] = (res.folder_name || buildFolderName(docType, id));
+            file_upload_grid_vm.setValueFromCoords(0, targetRow, id);
+            var label = 'View' + (rowFiles[targetRow].length ? ' (' + rowFiles[targetRow].length + ')' : '');
+            file_upload_grid_vm.setValueFromCoords(3, targetRow, label);
+            updateUploadViewRowState(targetRow);
 
             if (res.files && res.files.length && typeof Swal !== 'undefined') {
               Swal.fire({ title: 'Uploaded', text: res.files.length + ' file(s) uploaded.', icon: 'success', customClass: { confirmButton: 'btn btn-info' } });
             }
+          } else {
+            rowFiles[targetRow] = existingFiles;
+            file_upload_grid_vm.setValueFromCoords(3, targetRow, 'View' + (existingFiles.length ? ' (' + existingFiles.length + ')' : ''));
+            updateUploadViewRowState(targetRow);
           }
         },
         error: function () {
+          rowFiles[targetRow] = existingFiles;
+          file_upload_grid_vm.setValueFromCoords(3, targetRow, 'View' + (existingFiles.length ? ' (' + existingFiles.length + ')' : ''));
+          updateUploadViewRowState(targetRow);
           if (typeof Swal !== 'undefined') {
             Swal.fire({ title: 'Upload failed', icon: 'error', customClass: { confirmButton: 'btn btn-info' } });
           }
@@ -407,30 +426,36 @@ $(document).ready(function () {
     var imageExts = /\.(jpe?g|png|gif|bmp|webp)$/i;
     files.forEach(function (name) {
       var url = base + encodeURIComponent(name);
-      var $col = $('<div class="col-xs-12 col-sm-6 col-md-4 mb-3 file-view-item"></div>');
+      var $col = $('<div class="col-xs-12 col-sm-6 col-md-4 file-view-item"></div>');
       var $card = $('<div class="file-item-card"></div>');
       var encodedName = encodeURIComponent(name);
-      var $deleteBtn = $('<button type="button" class="btn btn-xs btn-danger file-delete-btn"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>')
+      var extMatch = /\.([^.]+)$/.exec(name);
+      var extLabel = extMatch && extMatch[1] ? ('.' + extMatch[1].toUpperCase()) : 'FILE';
+      var isImage = imageExts.test(name);
+
+      var $deleteBtn = $('<button type="button" class="btn btn-xs btn-danger file-delete-btn"><i class="fas fa-trash" aria-hidden="true"></i><span>Delete</span></button>')
         .attr('data-row', row)
         .attr('data-file', encodedName)
         .addClass('file-action-btn');
+      $card.append($deleteBtn);
 
-      if (imageExts.test(name)) {
-        $card.append($('<img>').attr('src', url).addClass('img-responsive file-preview-image'));
-        $card.append($('<div class="file-name text-truncate"></div>').text(name));
-        $card.append($('<div class="file-item-actions"></div>').append($deleteBtn));
+      if (isImage) {
+        $card.append($('<img>').attr('src', url).addClass('img-responsive file-preview-image').attr('alt', name));
       } else {
         $card.append($('<div class="file-preview-icon"><i class="far fa-file-alt" aria-hidden="true"></i></div>'));
-        $card.append(
+      }
+
+      $card.append($('<div class="file-name text-truncate"></div>').text(name));
+      $card.append($('<div class="file-meta"></div>').text(extLabel));
+      $card.append(
+        $('<div class="file-item-actions"></div>').append(
           $('<a></a>')
             .attr('href', url)
             .attr('target', '_blank')
             .addClass('btn btn-default btn-sm file-open-link')
-            .html('<i class="fas fa-eye" aria-hidden="true"></i> Open')
-        );
-        $card.append($('<div class="file-name text-truncate"></div>').text(name));
-        $card.append($('<div class="file-item-actions"></div>').append($deleteBtn));
-      }
+            .html('<i class="fas fa-eye" aria-hidden="true"></i> View')
+        )
+      );
       $col.append($card);
       if ($body.length) $body.append($col);
     });

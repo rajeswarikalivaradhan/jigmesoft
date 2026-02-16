@@ -34,49 +34,104 @@
             #fileUploadGridSheet table tbody td:nth-child(4) { cursor: pointer; font-weight: 500; text-align: center; vertical-align: middle; }
             #fileUploadGridSheet .file-upload-cell-disabled { opacity: 0.5; pointer-events: none; cursor: not-allowed !important; color: #999; }
             #fileUploadGridSheet .file-action-btn { min-width: 95px; display: inline-flex; justify-content: center; align-items: center; gap: 6px; }
-            #fileUploadViewModalImages .file-view-item { margin-bottom: 12px; }
+            #fileUploadViewModalImages .file-view-item {
+                margin-bottom: 12px;
+                padding-left: 8px;
+                padding-right: 8px;
+            }
             #fileUploadViewModalImages .file-item-card {
-                border: 1px solid #e6e6e6;
-                border-radius: 6px;
-                padding: 8px;
-                min-height: 170px;
+                position: relative;
+                border: 1px solid #d9dde5;
+                border-radius: 10px;
+                padding: 10px;
+                min-height: 188px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: flex-start;
                 gap: 6px;
-                background: #fff;
+                background: #ffffff;
             }
             #fileUploadViewModalImages .file-preview-image {
-                width: 100%;
-                max-height: 95px;
+                width: 46px;
+                height: 46px;
                 object-fit: contain;
-                border: 1px solid #ddd;
+                border: none;
                 border-radius: 4px;
-                background: #fafafa;
+                background: transparent;
             }
             #fileUploadViewModalImages .file-preview-icon {
-                width: 100%;
-                height: 85px;
+                width: 46px;
+                height: 46px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color: #4b5563;
-                font-size: 32px;
-                border: 1px dashed #d1d5db;
-                border-radius: 4px;
-                background: #f9fafb;
+                color: #f97316;
+                font-size: 38px;
+                border: none;
+                border-radius: 0;
+                background: transparent;
             }
             #fileUploadViewModalImages .file-name {
                 width: 100%;
                 text-align: center;
-                font-size: 12px;
-                color: #374151;
+                font-size: 14px;
+                color: #111827;
+                font-weight: 600;
                 line-height: 1.3;
-                word-break: break-all;
+                margin-top: 4px;
+                word-break: break-word;
+                min-height: 36px;
+                max-height: 36px;
+                overflow: hidden;
             }
-            #fileUploadViewModalImages .file-item-actions { width: 100%; display: flex; justify-content: center; }
-            #fileUploadViewModalImages .file-open-link { min-width: 95px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+            #fileUploadViewModalImages .file-meta {
+                width: 100%;
+                text-align: center;
+                font-size: 12px;
+                color: #7b8494;
+                line-height: 1.2;
+                text-transform: uppercase;
+            }
+            #fileUploadViewModalImages .file-item-actions {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                margin-top: auto;
+                padding-top: 4px;
+            }
+            #fileUploadViewModalImages .file-open-link {
+                width: 100%;
+                min-width: 95px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                border-radius: 9px;
+                border: 1px solid #d1d5db;
+                background: #f8fafc;
+                color: #111827;
+                font-weight: 600;
+            }
+            #fileUploadViewModalImages .file-open-link:hover {
+                background: #eef2f7;
+                color: #111827;
+            }
+            #fileUploadViewModalImages .file-delete-btn {
+                position: absolute;
+                top: 6px;
+                right: 6px;
+                width: 24px;
+                height: 24px;
+                min-width: 24px;
+                padding: 0;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            #fileUploadViewModalImages .file-delete-btn i { font-size: 12px; }
+            #fileUploadViewModalImages .file-delete-btn span { display: none; }
         </style>
         <div id="fileUploadGridSheet"></div>
         <div class="card border-0">
