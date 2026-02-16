@@ -38,18 +38,18 @@
             #fileUploadViewModalImages .file-item-card {
                 border: 1px solid #e6e6e6;
                 border-radius: 6px;
-                padding: 10px;
-                min-height: 220px;
+                padding: 8px;
+                min-height: 170px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: flex-start;
-                gap: 8px;
+                gap: 6px;
                 background: #fff;
             }
             #fileUploadViewModalImages .file-preview-image {
                 width: 100%;
-                max-height: 140px;
+                max-height: 95px;
                 object-fit: contain;
                 border: 1px solid #ddd;
                 border-radius: 4px;
@@ -57,12 +57,12 @@
             }
             #fileUploadViewModalImages .file-preview-icon {
                 width: 100%;
-                height: 120px;
+                height: 85px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 color: #4b5563;
-                font-size: 42px;
+                font-size: 32px;
                 border: 1px dashed #d1d5db;
                 border-radius: 4px;
                 background: #f9fafb;
