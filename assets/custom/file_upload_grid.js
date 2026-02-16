@@ -6,6 +6,7 @@ $(document).ready(function () {
   var file_upload_grid_vm = null;
   var rowFiles = {};
   var rowIds = {};
+  var rowFolderNames = {};
   var docBaseUrl = '';
   var currentUploadRow = -1;
   var fileUploadStateInterval = null;
@@ -22,11 +23,13 @@ $(document).ready(function () {
       success: function (data) {
         rowFiles = {};
         rowIds = {};
+        rowFolderNames = {};
         if (data && data.base_url) docBaseUrl = data.base_url;
         if (data && data.rows && data.rows.length) {
           data.rows.forEach(function (r, idx) {
             rowIds[idx] = r.id;
             rowFiles[idx] = Array.isArray(r.uploaded_files) ? r.uploaded_files : [];
+            rowFolderNames[idx] = r.folder_name || buildFolderName(r.document_type || '', r.id);
           });
         }
         appendFileUploadGrid(data);
@@ -34,6 +37,7 @@ $(document).ready(function () {
       error: function () {
         rowFiles = {};
         rowIds = {};
+        rowFolderNames = {};
         docBaseUrl = '';
         appendFileUploadGrid(null);
       }
@@ -148,7 +152,7 @@ $(document).ready(function () {
       $uploadTd
         .toggleClass('file-upload-cell-disabled', !hasDocType)
         .html(
-          '<button type="button" class="btn btn-xs btn-info file-upload-btn" data-row="' + row + '"' + (hasDocType ? '' : ' disabled') + '>Upload</button>'
+          '<button type="button" class="btn btn-xs btn-info file-action-btn file-upload-btn" data-row="' + row + '"' + (hasDocType ? '' : ' disabled') + '><i class="fas fa-upload" aria-hidden="true"></i> Upload</button>'
         );
     }
 
@@ -156,9 +160,21 @@ $(document).ready(function () {
       $viewTd
         .toggleClass('file-upload-cell-disabled', !hasFiles)
         .html(
-          '<button type="button" class="btn btn-xs btn-default file-view-btn" data-row="' + row + '"' + (hasFiles ? '' : ' disabled') + '>View' + (viewCount ? ' (' + viewCount + ')' : '') + '</button>'
+          '<button type="button" class="btn btn-xs btn-default file-action-btn file-view-btn" data-row="' + row + '"' + (hasFiles ? '' : ' disabled') + '><i class="fas fa-eye" aria-hidden="true"></i> View' + (viewCount ? ' (' + viewCount + ')' : '') + '</button>'
         );
     }
+  }
+
+  function sanitizeDocType(docType) {
+    var normalized = String(docType || '').toLowerCase().trim();
+    normalized = normalized.replace(/[^a-z0-9]+/g, '_');
+    normalized = normalized.replace(/^_+|_+$/g, '');
+    return normalized || 'document';
+  }
+
+  function buildFolderName(docType, rowId) {
+    if (!rowId) return '';
+    return sanitizeDocType(docType) + '_' + rowId;
   }
 
   function updateUploadViewRowState(row) {
@@ -256,6 +272,7 @@ $(document).ready(function () {
               rowFiles[currentUploadRow] = rowFiles[currentUploadRow].concat(res.files);
             }
             rowIds[currentUploadRow] = id;
+            rowFolderNames[currentUploadRow] = (res.folder_name || buildFolderName(docType, id));
             file_upload_grid_vm.setValueFromCoords(0, currentUploadRow, id);
             var label = 'View' + (rowFiles[currentUploadRow].length ? ' (' + rowFiles[currentUploadRow].length + ')' : '');
             file_upload_grid_vm.setValueFromCoords(3, currentUploadRow, label);
@@ -276,6 +293,50 @@ $(document).ready(function () {
       this.value = '';
       currentUploadRow = -1;
     });
+
+    $(document).off('click.fileuploadDelete').on('click.fileuploadDelete', '#fileUploadViewModal .file-delete-btn', function () {
+      var $btn = $(this);
+      var row = parseInt($btn.attr('data-row'), 10);
+      var fileName = decodeURIComponent($btn.attr('data-file') || '');
+      if (isNaN(row) || row < 0 || !fileName) return;
+
+      var rowId = rowIds[row] || (file_upload_grid_vm && file_upload_grid_vm.getValueFromCoords ? file_upload_grid_vm.getValueFromCoords(0, row) : '');
+      if (!rowId) return;
+
+      $.ajax({
+        type: 'POST',
+        url: base_path + 'WorkInProcess/deleteTestListDocumentFile',
+        data: { enquiry_id: enquiry_id, row_id: rowId, file_name: fileName },
+        dataType: 'json',
+        success: function (res) {
+          if (!res || res.status !== 'success') {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({ title: 'Delete failed', text: (res && res.msg) || 'Unable to delete file.', icon: 'error', customClass: { confirmButton: 'btn btn-info' } });
+            }
+            return;
+          }
+
+            var files = rowFiles[row] || [];
+            rowFiles[row] = files.filter(function (name) { return name !== fileName; });
+            if (res.folder_deleted) {
+              rowFolderNames[row] = '';
+            }
+            var viewLabel = 'View' + (rowFiles[row].length ? ' (' + rowFiles[row].length + ')' : '');
+            file_upload_grid_vm.setValueFromCoords(3, row, viewLabel);
+            updateUploadViewRowState(row);
+
+          showViewModal(row);
+          if (!rowFiles[row].length) {
+            $('#fileUploadViewModal').modal('hide');
+          }
+        },
+        error: function () {
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({ title: 'Delete failed', text: 'Unable to delete file.', icon: 'error', customClass: { confirmButton: 'btn btn-info' } });
+          }
+        }
+      });
+    });
   }
 
   function showViewModal(row) {
@@ -287,19 +348,39 @@ $(document).ready(function () {
     var title = docType ? 'Uploaded Documents - ' + docType : 'Uploaded Documents';
     $('#fileUploadViewModal').find('.modal-title').text(title);
 
-    var base = docBaseUrl + 'row_' + id + '/';
+    var folderName = rowFolderNames[row] || buildFolderName(docType, id);
+    var base = docBaseUrl + folderName + '/';
     var $body = $('#fileUploadViewModalImages');
     if ($body.length) $body.empty();
 
     var imageExts = /\.(jpe?g|png|gif|bmp|webp)$/i;
     files.forEach(function (name) {
       var url = base + encodeURIComponent(name);
-      var $col = $('<div class="col-xs-12 col-sm-6 col-md-4 mb-3"></div>');
+      var $col = $('<div class="col-xs-12 col-sm-6 col-md-4 mb-3 file-view-item"></div>');
+      var $card = $('<div class="file-item-card"></div>');
+      var encodedName = encodeURIComponent(name);
+      var $deleteBtn = $('<button type="button" class="btn btn-xs btn-danger file-delete-btn"><i class="fas fa-trash" aria-hidden="true"></i> Delete</button>')
+        .attr('data-row', row)
+        .attr('data-file', encodedName)
+        .addClass('file-action-btn');
+
       if (imageExts.test(name)) {
-        $col.append($('<img>').attr('src', url).css({ maxWidth: '100%', height: 'auto', border: '1px solid #ddd' }).addClass('img-responsive'));
+        $card.append($('<img>').attr('src', url).addClass('img-responsive file-preview-image'));
+        $card.append($('<div class="file-name text-truncate"></div>').text(name));
+        $card.append($('<div class="file-item-actions"></div>').append($deleteBtn));
       } else {
-        $col.append($('<a>').attr('href', url).attr('target', '_blank').text(name).addClass('btn btn-default'));
+        $card.append($('<div class="file-preview-icon"><i class="far fa-file-alt" aria-hidden="true"></i></div>'));
+        $card.append(
+          $('<a></a>')
+            .attr('href', url)
+            .attr('target', '_blank')
+            .addClass('btn btn-default btn-sm file-open-link')
+            .html('<i class="fas fa-eye" aria-hidden="true"></i> Open')
+        );
+        $card.append($('<div class="file-name text-truncate"></div>').text(name));
+        $card.append($('<div class="file-item-actions"></div>').append($deleteBtn));
       }
+      $col.append($card);
       if ($body.length) $body.append($col);
     });
 

@@ -607,7 +607,7 @@
         /**
          * Upload multiple files for Test List; store in DB (one row per grid row, files as JSON).
          * POST: enquiry_id, row_id (DB id, empty for new row), document_type, myFile[].
-         * Files saved to uploads/.../Enq_X/row_{id}/. Returns { status, id, files }.
+         * Files saved to uploads/.../Enq_X/{document_type}_{id}/. Returns { status, id, files, folder_name }.
          */
         public function uploadTestListDocument()
         {
@@ -621,7 +621,9 @@
                 $row_id = $this->WorkInProcessModel->insertTestListDocumentRow($enquiry_id, $document_type ?: '', array());
             }
 
-            $filepath = 'uploads/workinprocess/testlist' . DIRECTORY_SEPARATOR . $this->subscriber_id . DIRECTORY_SEPARATOR . 'Enq_' . $enquiry_id . DIRECTORY_SEPARATOR . 'row_' . $row_id . DIRECTORY_SEPARATOR;
+            $folder_name = $this->buildTestListFolderName($document_type, $row_id);
+            $base_dir = 'uploads/workinprocess/testlist' . DIRECTORY_SEPARATOR . $this->subscriber_id . DIRECTORY_SEPARATOR . 'Enq_' . $enquiry_id . DIRECTORY_SEPARATOR;
+            $filepath = $base_dir . $folder_name . DIRECTORY_SEPARATOR;
             if (!is_dir($filepath)) {
                 mkdir($filepath, 0777, true);
             }
@@ -655,7 +657,7 @@
                 $this->WorkInProcessModel->updateTestListDocumentRow($row_id, $enquiry_id, $document_type ?: '', $uploaded);
             }
 
-            echo json_encode(array('status' => 'success', 'id' => $row_id, 'files' => $uploaded));
+            echo json_encode(array('status' => 'success', 'id' => $row_id, 'files' => $uploaded, 'folder_name' => $folder_name));
         }
 
         /**
@@ -666,9 +668,17 @@
         {
             $enquiry_id = (int) xssclean($this->input->get_post('enquiry_id'));
             $rel_path = 'uploads/workinprocess/testlist/' . str_replace(DIRECTORY_SEPARATOR, '/', $this->subscriber_id) . '/Enq_' . $enquiry_id . '/';
+            $rows = $this->WorkInProcessModel->getTestListDocumentRows($enquiry_id);
+            foreach ($rows as &$r) {
+                $r['folder_name'] = $this->resolveExistingTestListFolderName(
+                    $enquiry_id,
+                    isset($r['document_type']) ? $r['document_type'] : '',
+                    isset($r['id']) ? $r['id'] : 0
+                );
+            }
             $result = array(
                 'base_url' => base_url() . $rel_path,
-                'rows' => $this->WorkInProcessModel->getTestListDocumentRows($enquiry_id)
+                'rows' => $rows
             );
             echo json_encode($result);
         }
@@ -696,6 +706,88 @@
                 }
             }
             echo json_encode(array('status' => 'success', 'msg' => 'Saved successfully'));
+        }
+
+        /**
+         * Delete one uploaded file from a specific test-list document row.
+         * POST: enquiry_id, row_id, file_name
+         */
+        public function deleteTestListDocumentFile()
+        {
+            $enquiry_id = (int) xssclean($this->input->post('enquiry_id'));
+            $row_id = (int) xssclean($this->input->post('row_id'));
+            $file_name = basename((string) xssclean($this->input->post('file_name')));
+
+            if ($enquiry_id < 1 || $row_id < 1 || $file_name === '') {
+                echo json_encode(array('status' => 'error', 'msg' => 'Invalid request'));
+                return;
+            }
+
+            $deleted = $this->WorkInProcessModel->deleteTestListDocumentFile($row_id, $enquiry_id, $file_name);
+            if (!$deleted) {
+                echo json_encode(array('status' => 'error', 'msg' => 'File not found'));
+                return;
+            }
+
+            $rowData = $this->WorkInProcessModel->getTestListDocumentRowById($row_id, $enquiry_id);
+            $folder_name = $this->resolveExistingTestListFolderName($enquiry_id, isset($rowData['document_type']) ? $rowData['document_type'] : '', $row_id);
+            $base_dir = 'uploads/workinprocess/testlist' . DIRECTORY_SEPARATOR . $this->subscriber_id . DIRECTORY_SEPARATOR . 'Enq_' . $enquiry_id . DIRECTORY_SEPARATOR;
+            $folder_path = $base_dir . $folder_name . DIRECTORY_SEPARATOR;
+            $filepath = $folder_path . $file_name;
+            if (is_file($filepath)) {
+                @unlink($filepath);
+            } else {
+                $legacy_path = $base_dir . 'row_' . $row_id . DIRECTORY_SEPARATOR . $file_name;
+                if (is_file($legacy_path)) {
+                    @unlink($legacy_path);
+                    $folder_path = $base_dir . 'row_' . $row_id . DIRECTORY_SEPARATOR;
+                }
+            }
+
+            $folder_deleted = false;
+            $remaining = isset($rowData['uploaded_files']) && is_array($rowData['uploaded_files']) ? $rowData['uploaded_files'] : array();
+            if (count($remaining) === 0) {
+                if (is_dir($folder_path)) {
+                    $folder_deleted = @rmdir($folder_path) ? true : false;
+                }
+                $alt_folder_path = $base_dir . $this->buildTestListFolderName(isset($rowData['document_type']) ? $rowData['document_type'] : '', $row_id) . DIRECTORY_SEPARATOR;
+                if (is_dir($alt_folder_path)) {
+                    $folder_deleted = (@rmdir($alt_folder_path) || $folder_deleted) ? true : $folder_deleted;
+                }
+            }
+
+            echo json_encode(array('status' => 'success', 'msg' => 'File deleted', 'folder_deleted' => $folder_deleted));
+        }
+
+        private function sanitizeFolderToken($value)
+        {
+            $value = strtolower(trim((string) $value));
+            $value = preg_replace('/[^a-z0-9]+/', '_', $value);
+            $value = trim($value, '_');
+            return $value !== '' ? $value : 'document';
+        }
+
+        private function buildTestListFolderName($document_type, $row_id)
+        {
+            $row_id = (int) $row_id;
+            $token = $this->sanitizeFolderToken($document_type);
+            return $token . '_' . $row_id;
+        }
+
+        private function resolveExistingTestListFolderName($enquiry_id, $document_type, $row_id)
+        {
+            $row_id = (int) $row_id;
+            $preferred = $this->buildTestListFolderName($document_type, $row_id);
+            $legacy = 'row_' . $row_id;
+            $base_dir = 'uploads/workinprocess/testlist' . DIRECTORY_SEPARATOR . $this->subscriber_id . DIRECTORY_SEPARATOR . 'Enq_' . (int) $enquiry_id . DIRECTORY_SEPARATOR;
+
+            if (is_dir($base_dir . $preferred . DIRECTORY_SEPARATOR)) {
+                return $preferred;
+            }
+            if (is_dir($base_dir . $legacy . DIRECTORY_SEPARATOR)) {
+                return $legacy;
+            }
+            return $preferred;
         }
 
         public function updateWipRemarksDetails()

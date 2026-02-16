@@ -31,8 +31,52 @@
         <style>
             #fileUploadGridSheet { min-height: 220px; }
             #fileUploadGridSheet table tbody td:nth-child(3),
-            #fileUploadGridSheet table tbody td:nth-child(4) { cursor: pointer; font-weight: 500; }
+            #fileUploadGridSheet table tbody td:nth-child(4) { cursor: pointer; font-weight: 500; text-align: center; vertical-align: middle; }
             #fileUploadGridSheet .file-upload-cell-disabled { opacity: 0.5; pointer-events: none; cursor: not-allowed !important; color: #999; }
+            #fileUploadGridSheet .file-action-btn { min-width: 95px; display: inline-flex; justify-content: center; align-items: center; gap: 6px; }
+            #fileUploadViewModalImages .file-view-item { margin-bottom: 12px; }
+            #fileUploadViewModalImages .file-item-card {
+                border: 1px solid #e6e6e6;
+                border-radius: 6px;
+                padding: 10px;
+                min-height: 220px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 8px;
+                background: #fff;
+            }
+            #fileUploadViewModalImages .file-preview-image {
+                width: 100%;
+                max-height: 140px;
+                object-fit: contain;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                background: #fafafa;
+            }
+            #fileUploadViewModalImages .file-preview-icon {
+                width: 100%;
+                height: 120px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #4b5563;
+                font-size: 42px;
+                border: 1px dashed #d1d5db;
+                border-radius: 4px;
+                background: #f9fafb;
+            }
+            #fileUploadViewModalImages .file-name {
+                width: 100%;
+                text-align: center;
+                font-size: 12px;
+                color: #374151;
+                line-height: 1.3;
+                word-break: break-all;
+            }
+            #fileUploadViewModalImages .file-item-actions { width: 100%; display: flex; justify-content: center; }
+            #fileUploadViewModalImages .file-open-link { min-width: 95px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         </style>
         <div id="fileUploadGridSheet"></div>
         <div class="card border-0">

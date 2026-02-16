@@ -11565,5 +11565,68 @@ public function updateYarnProgrammeDetailss($req_data, $id)
             'updated_at'    => $this->mysqldatetime
         ));
     }
+
+    /**
+     * Delete a single filename from uploaded_files JSON for a row.
+     * @param int $id
+     * @param int $enquiry_id
+     * @param string $file_name
+     * @return bool true when file reference removed
+     */
+    public function deleteTestListDocumentFile($id, $enquiry_id, $file_name)
+    {
+        $id = (int) $id;
+        $enquiry_id = (int) $enquiry_id;
+        $file_name = (string) $file_name;
+
+        $row = $this->db->select('uploaded_files')
+            ->get_where(KN_TESTLIST_DOCUMENT_UPLOADS, array('id' => $id, 'enquiry_id' => $enquiry_id))
+            ->row_array();
+        if (empty($row)) {
+            return false;
+        }
+
+        $existing = !empty($row['uploaded_files']) ? json_decode($row['uploaded_files'], true) : array();
+        if (!is_array($existing)) {
+            $existing = array();
+        }
+
+        $filtered = array_values(array_filter($existing, function ($name) use ($file_name) {
+            return (string) $name !== $file_name;
+        }));
+
+        if (count($filtered) === count($existing)) {
+            return false;
+        }
+
+        $this->db->where(array('id' => $id, 'enquiry_id' => $enquiry_id));
+        $this->db->update(KN_TESTLIST_DOCUMENT_UPLOADS, array(
+            'uploaded_files' => json_encode($filtered),
+            'updated_at'     => $this->mysqldatetime
+        ));
+
+        return true;
+    }
+
+    /**
+     * Get one test-list document row by id and enquiry.
+     * @param int $id
+     * @param int $enquiry_id
+     * @return array|null
+     */
+    public function getTestListDocumentRowById($id, $enquiry_id)
+    {
+        $row = $this->db->select('id, enquiry_id, document_type, uploaded_files')
+            ->get_where(KN_TESTLIST_DOCUMENT_UPLOADS, array('id' => (int) $id, 'enquiry_id' => (int) $enquiry_id))
+            ->row_array();
+        if (empty($row)) {
+            return null;
+        }
+        $row['uploaded_files'] = !empty($row['uploaded_files']) ? json_decode($row['uploaded_files'], true) : array();
+        if (!is_array($row['uploaded_files'])) {
+            $row['uploaded_files'] = array();
+        }
+        return $row;
+    }
     
 }
