@@ -549,7 +549,6 @@ option {
         var enquiry_id = <?php echo $VarEnqId; ?>;
         var base_path = '<?php echo base_url(); ?>';
     </script>
-    <script type="text/javascript" src="<?php echo base_url('assets/custom/file_upload_grid.js'); ?>"></script>
     <script>
         // *************** order entry tab panel previous and next trigger *************** 
         $('#backbtns').click(function () {

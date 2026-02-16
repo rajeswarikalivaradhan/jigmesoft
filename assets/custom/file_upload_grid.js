@@ -1,9 +1,8 @@
 /**
- * File Upload grid – same pattern as products.js.
- * Document Type dropdown (like Product list), Upload, View. Data from getTestListDocuments or default row.
+ * File Upload grid - same pattern as products.js.
+ * Document Type dropdown, row-wise Upload and View actions.
  */
 $(document).ready(function () {
-  // Same structure as products.js: no early return, so tab handler and getFileUploadGrid are always defined
   var file_upload_grid_vm = null;
   var rowFiles = {};
   var rowIds = {};
@@ -11,7 +10,6 @@ $(document).ready(function () {
   var currentUploadRow = -1;
   var fileUploadStateInterval = null;
 
-  // Document type list (like products_list in products.js)
   var DOCUMENT_TYPES = ['Spec Sheet', 'Test Report', 'Certificate', 'Other'];
 
   function getFileUploadGrid() {
@@ -52,14 +50,13 @@ $(document).ready(function () {
     if (rows.length === 0) {
       initialData.push(['', '', 'Upload', 'View']);
     } else {
-      rows.forEach(function (r, idx) {
+      rows.forEach(function (r) {
         var files = Array.isArray(r.uploaded_files) ? r.uploaded_files : [];
         var viewLabel = files.length ? 'View (' + files.length + ')' : 'View';
         initialData.push([r.id, r.document_type || '', 'Upload', viewLabel]);
       });
     }
 
-    // Same pattern as products.js: options object then jexcel in Vue mounted
     var file_upload_grid = {
       data: initialData,
       columns: [
@@ -72,7 +69,7 @@ $(document).ready(function () {
       allowInsertRow: true,
       allowDeleteColumn: false,
       allowInsertColumn: false,
-      onchange: function (instance, cell, col, row, val, label, cellName) {
+      onchange: function (instance, cell, col, row) {
         if (col === 1 || col === 0) {
           setTimeout(function () { updateUploadViewRowState(row); }, 50);
         }
@@ -94,7 +91,6 @@ $(document).ready(function () {
       }
     });
 
-    // Attach save button same way as products.js (after grid is created)
     $('#fileUploadGridSubmit')
       .off('click.fileupload')
       .on('click.fileupload', function () {
@@ -132,21 +128,7 @@ $(document).ready(function () {
     });
   }
 
-  function updateUploadViewRowState(row) {
-    var $sheet = $('#fileUploadGridSheet');
-    var $tr = $sheet.find('table tbody tr').eq(row);
-    if (!$tr.length) return;
-
-    var $uploadTd = $sheet.find('td[data-x="2"][data-y="' + row + '"]');
-    var $viewTd = $sheet.find('td[data-x="3"][data-y="' + row + '"]');
-    if (!$uploadTd || !$uploadTd.length) {
-      $tr.find('td').each(function () {
-        var txt = $(this).text().trim();
-        if (txt.indexOf('Upload') !== -1 && txt.indexOf('View') === -1) $uploadTd = $(this);
-        if (txt.indexOf('View') !== -1) $viewTd = $(this);
-      });
-    }
-
+  function getDocTypeForRow(row) {
     var docType = '';
     if (file_upload_grid_vm && file_upload_grid_vm.getData) {
       var gridData = file_upload_grid_vm.getData();
@@ -156,16 +138,44 @@ $(document).ready(function () {
       var v = file_upload_grid_vm.getValueFromCoords(1, row);
       if (v != null) docType = String(v).trim();
     }
-    var hasFiles = rowFiles[row] && rowFiles[row].length > 0;
+    return docType;
+  }
+
+  function renderRowButtons($uploadTd, $viewTd, row, hasDocType, hasFiles) {
+    var viewCount = hasFiles ? rowFiles[row].length : 0;
 
     if ($uploadTd && $uploadTd.length) {
-      if (docType) $uploadTd.removeClass('file-upload-cell-disabled');
-      else $uploadTd.addClass('file-upload-cell-disabled');
+      $uploadTd
+        .toggleClass('file-upload-cell-disabled', !hasDocType)
+        .html(
+          '<button type="button" class="btn btn-xs btn-info file-upload-btn" data-row="' + row + '"' + (hasDocType ? '' : ' disabled') + '>Upload</button>'
+        );
     }
+
     if ($viewTd && $viewTd.length) {
-      if (hasFiles) $viewTd.removeClass('file-upload-cell-disabled');
-      else $viewTd.addClass('file-upload-cell-disabled');
+      $viewTd
+        .toggleClass('file-upload-cell-disabled', !hasFiles)
+        .html(
+          '<button type="button" class="btn btn-xs btn-default file-view-btn" data-row="' + row + '"' + (hasFiles ? '' : ' disabled') + '>View' + (viewCount ? ' (' + viewCount + ')' : '') + '</button>'
+        );
     }
+  }
+
+  function updateUploadViewRowState(row) {
+    var $sheet = $('#fileUploadGridSheet');
+    var $uploadTd = $sheet.find('td[data-x="2"][data-y="' + row + '"]');
+    var $viewTd = $sheet.find('td[data-x="3"][data-y="' + row + '"]');
+
+    if ((!$uploadTd || !$uploadTd.length || !$viewTd || !$viewTd.length) && $sheet.find('table tbody tr').eq(row).length) {
+      var $cells = $sheet.find('table tbody tr').eq(row).find('td');
+      $uploadTd = $uploadTd.length ? $uploadTd : $cells.eq(2);
+      $viewTd = $viewTd.length ? $viewTd : $cells.eq(3);
+    }
+
+    var docType = getDocTypeForRow(row);
+    var hasFiles = !!(rowFiles[row] && rowFiles[row].length > 0);
+
+    renderRowButtons($uploadTd, $viewTd, row, !!docType, hasFiles);
   }
 
   function updateAllUploadViewStates() {
@@ -181,46 +191,46 @@ $(document).ready(function () {
     var $input = $('#fileUploadGridInput');
     if (!$sheet.length) return;
 
-    $sheet.off('click.fileupload').on('click.fileupload', 'td', function (e) {
-      var $td = $(this);
-      var col = $td.attr('data-x');
-      var row = $td.attr('data-y');
-      if (col == null || row == null) {
-        col = $td.index();
-        var $tr = $td.closest('tr');
-        row = $tr.parent().is('tbody') ? $tr.index() : $tr.index() - 1;
-      } else {
-        col = parseInt(col, 10);
-        row = parseInt(row, 10);
+    $sheet.off('click.fileuploadUpload').on('click.fileuploadUpload', '.file-upload-btn', function () {
+      var row = parseInt($(this).attr('data-row'), 10);
+      if (isNaN(row) || row < 0) return;
+
+      var docType = getDocTypeForRow(row);
+      if (!docType) {
+        updateUploadViewRowState(row);
+        return;
       }
-      if (row < 0) return;
 
-      var cellText = $td.text().trim();
-      var isUploadCell = cellText.indexOf('Upload') !== -1 && cellText.indexOf('View') === -1;
-      var isViewCell = cellText.indexOf('View') !== -1;
+      currentUploadRow = row;
+      $input.attr('accept', 'image/*,.pdf,.doc,.docx,.xls,.xlsx');
+      $input.trigger('click');
+    });
 
-      if (!isUploadCell && !isViewCell) return;
+    $sheet.off('click.fileuploadView').on('click.fileuploadView', '.file-view-btn', function () {
+      var row = parseInt($(this).attr('data-row'), 10);
+      if (isNaN(row) || row < 0) return;
 
-      updateUploadViewRowState(row);
-      if ($td.hasClass('file-upload-cell-disabled')) return;
-
-      if (isUploadCell) {
-        var docType = file_upload_grid_vm && file_upload_grid_vm.getValueFromCoords(1, row);
-        if (!docType || docType === '') return;
-        currentUploadRow = row;
-        $input.attr('accept', 'image/*,.pdf,.doc,.docx,.xls,.xlsx');
-        $input.trigger('click');
-      } else if (isViewCell) {
-        var files = rowFiles[row];
-        if (!files || files.length === 0) return;
-        showViewModal(row);
+      var files = rowFiles[row];
+      if (!files || files.length === 0) {
+        updateUploadViewRowState(row);
+        return;
       }
+      showViewModal(row);
     });
 
     $input.off('change.fileupload').on('change.fileupload', function () {
       var files = this.files;
       if (!files || files.length === 0 || currentUploadRow < 0) return;
+
       var docType = file_upload_grid_vm.getValueFromCoords(1, currentUploadRow);
+      if (!docType || String(docType).trim() === '') {
+        var invalidRow = currentUploadRow;
+        this.value = '';
+        currentUploadRow = -1;
+        updateUploadViewRowState(invalidRow);
+        return;
+      }
+
       var rowId = file_upload_grid_vm.getValueFromCoords(0, currentUploadRow);
       var formData = new FormData();
       formData.append('enquiry_id', enquiry_id);
@@ -229,6 +239,7 @@ $(document).ready(function () {
       for (var i = 0; i < files.length; i++) {
         formData.append('myFile[]', files[i]);
       }
+
       $.ajax({
         type: 'POST',
         url: base_path + 'WorkInProcess/uploadTestListDocument',
@@ -238,16 +249,19 @@ $(document).ready(function () {
         cache: false,
         dataType: 'json',
         success: function (res) {
-          if (res && res.status === 'success' && res.files && res.files.length) {
+          if (res && res.status === 'success') {
             var id = res.id;
             if (!rowFiles[currentUploadRow]) rowFiles[currentUploadRow] = [];
-            rowFiles[currentUploadRow] = rowFiles[currentUploadRow].concat(res.files);
+            if (res.files && res.files.length) {
+              rowFiles[currentUploadRow] = rowFiles[currentUploadRow].concat(res.files);
+            }
             rowIds[currentUploadRow] = id;
             file_upload_grid_vm.setValueFromCoords(0, currentUploadRow, id);
-            var label = 'View (' + rowFiles[currentUploadRow].length + ')';
+            var label = 'View' + (rowFiles[currentUploadRow].length ? ' (' + rowFiles[currentUploadRow].length + ')' : '');
             file_upload_grid_vm.setValueFromCoords(3, currentUploadRow, label);
             updateUploadViewRowState(currentUploadRow);
-            if (typeof Swal !== 'undefined') {
+
+            if (res.files && res.files.length && typeof Swal !== 'undefined') {
               Swal.fire({ title: 'Uploaded', text: res.files.length + ' file(s) uploaded.', icon: 'success', customClass: { confirmButton: 'btn btn-info' } });
             }
           }
@@ -258,6 +272,7 @@ $(document).ready(function () {
           }
         }
       });
+
       this.value = '';
       currentUploadRow = -1;
     });
@@ -267,12 +282,15 @@ $(document).ready(function () {
     var files = rowFiles[row];
     var id = rowIds[row];
     if (!files || !files.length || id == null) return;
+
     var docType = file_upload_grid_vm && file_upload_grid_vm.getValueFromCoords(1, row);
-    var title = docType ? 'Uploaded Documents – ' + docType : 'Uploaded Documents';
+    var title = docType ? 'Uploaded Documents - ' + docType : 'Uploaded Documents';
     $('#fileUploadViewModal').find('.modal-title').text(title);
+
     var base = docBaseUrl + 'row_' + id + '/';
     var $body = $('#fileUploadViewModalImages');
     if ($body.length) $body.empty();
+
     var imageExts = /\.(jpe?g|png|gif|bmp|webp)$/i;
     files.forEach(function (name) {
       var url = base + encodeURIComponent(name);
@@ -284,18 +302,20 @@ $(document).ready(function () {
       }
       if ($body.length) $body.append($col);
     });
+
     $('#fileUploadViewModal').modal('show');
   }
 
-  // Same as products.js: load when tab is shown (grid does not render when container is hidden)
   $(document).on('shown.bs.tab', 'a[href="#management_file_upload"]', function () {
     if (typeof enquiry_id === 'undefined' || typeof base_path === 'undefined') return;
     if (!$('#fileUploadGridSheet').length) return;
+
     if (!file_upload_grid_vm || !file_upload_grid_vm.getData) {
       getFileUploadGrid();
     } else {
       updateAllUploadViewStates();
     }
+
     if (fileUploadStateInterval) clearInterval(fileUploadStateInterval);
     fileUploadStateInterval = setInterval(function () {
       if (!$('#management_file_upload').length || !$('#management_file_upload').hasClass('active')) {
@@ -306,10 +326,14 @@ $(document).ready(function () {
       if (file_upload_grid_vm && file_upload_grid_vm.getData) updateAllUploadViewStates();
     }, 350);
   });
+
   $(document).on('shown.bs.tab', 'a[href="#management_test_list"]', function () {
-    if (fileUploadStateInterval) { clearInterval(fileUploadStateInterval); fileUploadStateInterval = null; }
+    if (fileUploadStateInterval) {
+      clearInterval(fileUploadStateInterval);
+      fileUploadStateInterval = null;
+    }
   });
-  // When TestList tab is shown, if FILE UPLOAD sub-tab is already active, load grid
+
   $(document).on('shown.bs.tab', 'a[href="#testlist"]', function () {
     if (typeof enquiry_id === 'undefined' || typeof base_path === 'undefined') return;
     if (!$('#fileUploadGridSheet').length) return;
@@ -318,3 +342,5 @@ $(document).ready(function () {
     }
   });
 });
+
+
