@@ -4,9 +4,8 @@
  */
 $(document).ready(function () {
   var file_upload_grid_vm = null;
-  var rowFiles = {};
-  var rowIds = {};
-  var rowFolderNames = {};
+  var rowFilesById = {};
+  var rowFolderNamesById = {};
   var docBaseUrl = '';
   var currentUploadRow = -1;
   var fileUploadStateInterval = null;
@@ -22,23 +21,23 @@ $(document).ready(function () {
       data: { enquiry_id: enquiry_id },
       dataType: 'json',
       success: function (data) {
-        rowFiles = {};
-        rowIds = {};
-        rowFolderNames = {};
+        rowFilesById = {};
+        rowFolderNamesById = {};
         if (data && data.base_url) docBaseUrl = data.base_url;
         if (data && data.rows && data.rows.length) {
-          data.rows.forEach(function (r, idx) {
-            rowIds[idx] = r.id;
-            rowFiles[idx] = Array.isArray(r.uploaded_files) ? r.uploaded_files : [];
-            rowFolderNames[idx] = r.folder_name || buildFolderName(r.document_type || '', r.id);
+          data.rows.forEach(function (r) {
+            var rid = parseInt(r.id, 10);
+            if (!isNaN(rid) && rid > 0) {
+              rowFilesById[rid] = Array.isArray(r.uploaded_files) ? r.uploaded_files : [];
+              rowFolderNamesById[rid] = r.folder_name || buildFolderName(r.document_type || '', rid);
+            }
           });
         }
         appendFileUploadGrid(data);
       },
       error: function () {
-        rowFiles = {};
-        rowIds = {};
-        rowFolderNames = {};
+        rowFilesById = {};
+        rowFolderNamesById = {};
         docBaseUrl = '';
         appendFileUploadGrid(null);
       }
@@ -92,11 +91,18 @@ $(document).ready(function () {
           deleteRowsImmediately(pendingDeleteRowIds.slice());
         }
         pendingDeleteRowIds = [];
+        setTimeout(function () { updateAllUploadViewStates(); }, 50);
       },
       onchange: function (instance, cell, col, row) {
         if (col === 1 || col === 0) {
           setTimeout(function () { updateUploadViewRowState(row); }, 50);
         }
+      },
+      oninsertrow: function () {
+        setTimeout(function () { updateAllUploadViewStates(); }, 50);
+      },
+      onmoverow: function () {
+        setTimeout(function () { updateAllUploadViewStates(); }, 50);
       }
     };
 
@@ -165,8 +171,8 @@ $(document).ready(function () {
     return docType;
   }
 
-  function renderRowButtons($uploadTd, $viewTd, row, hasDocType, hasFiles) {
-    var viewCount = hasFiles ? rowFiles[row].length : 0;
+  function renderRowButtons($uploadTd, $viewTd, row, hasDocType, hasFiles, viewCount) {
+    var count = hasFiles ? viewCount : 0;
 
     if ($uploadTd && $uploadTd.length) {
       $uploadTd
@@ -180,7 +186,7 @@ $(document).ready(function () {
       $viewTd
         .toggleClass('file-upload-cell-disabled', !hasFiles)
         .html(
-          '<button type="button" class="btn btn-xs btn-default file-action-btn file-view-btn" data-row="' + row + '"' + (hasFiles ? '' : ' disabled') + '><i class="fas fa-eye" aria-hidden="true"></i> View' + (viewCount ? ' (' + viewCount + ')' : '') + '</button>'
+          '<button type="button" class="btn btn-xs btn-default file-action-btn file-view-btn" data-row="' + row + '"' + (hasFiles ? '' : ' disabled') + '><i class="fas fa-eye" aria-hidden="true"></i> View' + (count ? ' (' + count + ')' : '') + '</button>'
         );
     }
   }
@@ -197,6 +203,17 @@ $(document).ready(function () {
     return sanitizeDocType(docType) + '_' + rowId;
   }
 
+  function getRowIdForRow(row) {
+    if (!file_upload_grid_vm || !file_upload_grid_vm.getValueFromCoords) return 0;
+    var rid = parseInt(file_upload_grid_vm.getValueFromCoords(0, row), 10);
+    return isNaN(rid) || rid < 1 ? 0 : rid;
+  }
+
+  function getFilesForRow(row) {
+    var rid = getRowIdForRow(row);
+    return rid && Array.isArray(rowFilesById[rid]) ? rowFilesById[rid] : [];
+  }
+
   function updateUploadViewRowState(row) {
     var $sheet = $('#fileUploadGridSheet');
     var $uploadTd = $sheet.find('td[data-x="2"][data-y="' + row + '"]');
@@ -209,9 +226,10 @@ $(document).ready(function () {
     }
 
     var docType = getDocTypeForRow(row);
-    var hasFiles = !!(rowFiles[row] && rowFiles[row].length > 0);
+    var files = getFilesForRow(row);
+    var hasFiles = files.length > 0;
 
-    renderRowButtons($uploadTd, $viewTd, row, !!docType, hasFiles);
+    renderRowButtons($uploadTd, $viewTd, row, !!docType, hasFiles, files.length);
   }
 
   function updateAllUploadViewStates() {
@@ -246,7 +264,7 @@ $(document).ready(function () {
       var row = parseInt($(this).attr('data-row'), 10);
       if (isNaN(row) || row < 0) return;
 
-      var files = rowFiles[row];
+      var files = getFilesForRow(row);
       if (!files || files.length === 0) {
         updateUploadViewRowState(row);
         return;
@@ -258,7 +276,8 @@ $(document).ready(function () {
       var files = this.files;
       if (!files || files.length === 0 || currentUploadRow < 0) return;
       var targetRow = currentUploadRow;
-      var existingFiles = (rowFiles[targetRow] || []).slice();
+      var rowId = getRowIdForRow(targetRow);
+      var existingFiles = getFilesForRow(targetRow).slice();
       var selectedFileNames = [];
 
       var docType = file_upload_grid_vm.getValueFromCoords(1, targetRow);
@@ -270,7 +289,6 @@ $(document).ready(function () {
         return;
       }
 
-      var rowId = file_upload_grid_vm.getValueFromCoords(0, targetRow);
       var formData = new FormData();
       formData.append('enquiry_id', enquiry_id);
       formData.append('row_id', rowId || '');
@@ -281,9 +299,9 @@ $(document).ready(function () {
       }
 
       // Enable View immediately after file selection for this row.
-      if (selectedFileNames.length) {
-        rowFiles[targetRow] = existingFiles.concat(selectedFileNames);
-        file_upload_grid_vm.setValueFromCoords(3, targetRow, 'View (' + rowFiles[targetRow].length + ')');
+      if (selectedFileNames.length && rowId) {
+        rowFilesById[rowId] = existingFiles.concat(selectedFileNames);
+        file_upload_grid_vm.setValueFromCoords(3, targetRow, 'View (' + rowFilesById[rowId].length + ')');
         updateUploadViewRowState(targetRow);
       }
 
@@ -297,16 +315,14 @@ $(document).ready(function () {
         dataType: 'json',
         success: function (res) {
           if (res && res.status === 'success') {
-            var id = res.id;
-            if (res.files && res.files.length) {
-              rowFiles[targetRow] = existingFiles.concat(res.files);
-            } else {
-              rowFiles[targetRow] = existingFiles;
+            var id = parseInt(res.id, 10);
+            var mergedFiles = (res.files && res.files.length) ? existingFiles.concat(res.files) : existingFiles;
+            if (!isNaN(id) && id > 0) {
+              rowFilesById[id] = mergedFiles;
+              rowFolderNamesById[id] = (res.folder_name || buildFolderName(docType, id));
+              file_upload_grid_vm.setValueFromCoords(0, targetRow, id);
             }
-            rowIds[targetRow] = id;
-            rowFolderNames[targetRow] = (res.folder_name || buildFolderName(docType, id));
-            file_upload_grid_vm.setValueFromCoords(0, targetRow, id);
-            var label = 'View' + (rowFiles[targetRow].length ? ' (' + rowFiles[targetRow].length + ')' : '');
+            var label = 'View' + (mergedFiles.length ? ' (' + mergedFiles.length + ')' : '');
             file_upload_grid_vm.setValueFromCoords(3, targetRow, label);
             updateUploadViewRowState(targetRow);
 
@@ -314,13 +330,13 @@ $(document).ready(function () {
               Swal.fire({ title: 'Uploaded', text: res.files.length + ' file(s) uploaded.', icon: 'success', customClass: { confirmButton: 'btn btn-info' } });
             }
           } else {
-            rowFiles[targetRow] = existingFiles;
+            if (rowId) rowFilesById[rowId] = existingFiles;
             file_upload_grid_vm.setValueFromCoords(3, targetRow, 'View' + (existingFiles.length ? ' (' + existingFiles.length + ')' : ''));
             updateUploadViewRowState(targetRow);
           }
         },
         error: function () {
-          rowFiles[targetRow] = existingFiles;
+          if (rowId) rowFilesById[rowId] = existingFiles;
           file_upload_grid_vm.setValueFromCoords(3, targetRow, 'View' + (existingFiles.length ? ' (' + existingFiles.length + ')' : ''));
           updateUploadViewRowState(targetRow);
           if (typeof Swal !== 'undefined') {
@@ -339,7 +355,7 @@ $(document).ready(function () {
       var fileName = decodeURIComponent($btn.attr('data-file') || '');
       if (isNaN(row) || row < 0 || !fileName) return;
 
-      var rowId = rowIds[row] || (file_upload_grid_vm && file_upload_grid_vm.getValueFromCoords ? file_upload_grid_vm.getValueFromCoords(0, row) : '');
+      var rowId = getRowIdForRow(row);
       if (!rowId) return;
 
       var doDelete = function () {
@@ -356,17 +372,17 @@ $(document).ready(function () {
               return;
             }
 
-              var files = rowFiles[row] || [];
-              rowFiles[row] = files.filter(function (name) { return name !== fileName; });
+              var files = rowFilesById[rowId] || [];
+              rowFilesById[rowId] = files.filter(function (name) { return name !== fileName; });
               if (res.folder_deleted) {
-                rowFolderNames[row] = '';
+                delete rowFolderNamesById[rowId];
               }
-              var viewLabel = 'View' + (rowFiles[row].length ? ' (' + rowFiles[row].length + ')' : '');
+              var viewLabel = 'View' + (rowFilesById[rowId].length ? ' (' + rowFilesById[rowId].length + ')' : '');
               file_upload_grid_vm.setValueFromCoords(3, row, viewLabel);
               updateUploadViewRowState(row);
 
             showViewModal(row);
-            if (!rowFiles[row].length) {
+            if (!rowFilesById[rowId].length) {
               $('#fileUploadViewModal').modal('hide');
             }
           },
@@ -409,7 +425,15 @@ $(document).ready(function () {
         data: { enquiry_id: enquiry_id, row_id: rid },
         dataType: 'json',
         success: function (res) {
-          if (!res || res.status !== 'success') hasError = true;
+          if (!res || res.status !== 'success') {
+            hasError = true;
+          } else {
+            var id = parseInt(rid, 10);
+            if (!isNaN(id) && id > 0) {
+              delete rowFilesById[id];
+              delete rowFolderNamesById[id];
+            }
+          }
         },
         error: function () {
           hasError = true;
@@ -428,15 +452,15 @@ $(document).ready(function () {
   }
 
   function showViewModal(row) {
-    var files = rowFiles[row];
-    var id = rowIds[row];
+    var id = getRowIdForRow(row);
+    var files = (id && rowFilesById[id]) ? rowFilesById[id] : [];
     if (!files || !files.length || id == null) return;
 
     var docType = file_upload_grid_vm && file_upload_grid_vm.getValueFromCoords(1, row);
     var title = docType ? 'Uploaded Documents - ' + docType : 'Uploaded Documents';
     $('#fileUploadViewModal').find('.modal-title').text(title);
 
-    var folderName = rowFolderNames[row] || buildFolderName(docType, id);
+    var folderName = rowFolderNamesById[id] || buildFolderName(docType, id);
     var base = docBaseUrl + folderName + '/';
     var $body = $('#fileUploadViewModalImages');
     if ($body.length) $body.empty();
