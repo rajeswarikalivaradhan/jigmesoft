@@ -342,39 +342,57 @@ $(document).ready(function () {
       var rowId = rowIds[row] || (file_upload_grid_vm && file_upload_grid_vm.getValueFromCoords ? file_upload_grid_vm.getValueFromCoords(0, row) : '');
       if (!rowId) return;
 
-      $.ajax({
-        type: 'POST',
-        url: base_path + 'WorkInProcess/deleteTestListDocumentFile',
-        data: { enquiry_id: enquiry_id, row_id: rowId, file_name: fileName },
-        dataType: 'json',
-        success: function (res) {
-          if (!res || res.status !== 'success') {
+      var doDelete = function () {
+        $.ajax({
+          type: 'POST',
+          url: base_path + 'WorkInProcess/deleteTestListDocumentFile',
+          data: { enquiry_id: enquiry_id, row_id: rowId, file_name: fileName },
+          dataType: 'json',
+          success: function (res) {
+            if (!res || res.status !== 'success') {
+              if (typeof Swal !== 'undefined') {
+                Swal.fire({ title: 'Delete failed', text: (res && res.msg) || 'Unable to delete file.', icon: 'error', customClass: { confirmButton: 'btn btn-info' } });
+              }
+              return;
+            }
+
+              var files = rowFiles[row] || [];
+              rowFiles[row] = files.filter(function (name) { return name !== fileName; });
+              if (res.folder_deleted) {
+                rowFolderNames[row] = '';
+              }
+              var viewLabel = 'View' + (rowFiles[row].length ? ' (' + rowFiles[row].length + ')' : '');
+              file_upload_grid_vm.setValueFromCoords(3, row, viewLabel);
+              updateUploadViewRowState(row);
+
+            showViewModal(row);
+            if (!rowFiles[row].length) {
+              $('#fileUploadViewModal').modal('hide');
+            }
+          },
+          error: function () {
             if (typeof Swal !== 'undefined') {
-              Swal.fire({ title: 'Delete failed', text: (res && res.msg) || 'Unable to delete file.', icon: 'error', customClass: { confirmButton: 'btn btn-info' } });
+              Swal.fire({ title: 'Delete failed', text: 'Unable to delete file.', icon: 'error', customClass: { confirmButton: 'btn btn-info' } });
             }
-            return;
           }
+        });
+      };
 
-            var files = rowFiles[row] || [];
-            rowFiles[row] = files.filter(function (name) { return name !== fileName; });
-            if (res.folder_deleted) {
-              rowFolderNames[row] = '';
-            }
-            var viewLabel = 'View' + (rowFiles[row].length ? ' (' + rowFiles[row].length + ')' : '');
-            file_upload_grid_vm.setValueFromCoords(3, row, viewLabel);
-            updateUploadViewRowState(row);
-
-          showViewModal(row);
-          if (!rowFiles[row].length) {
-            $('#fileUploadViewModal').modal('hide');
-          }
-        },
-        error: function () {
-          if (typeof Swal !== 'undefined') {
-            Swal.fire({ title: 'Delete failed', text: 'Unable to delete file.', icon: 'error', customClass: { confirmButton: 'btn btn-info' } });
-          }
-        }
-      });
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: 'Delete file?',
+          text: 'Do you want to delete this file?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Delete',
+          cancelButtonText: 'Cancel',
+          customClass: { confirmButton: 'btn btn-danger', cancelButton: 'btn btn-default' }
+        }).then(function (result) {
+          if (result.isConfirmed) doDelete();
+        });
+      } else if (window.confirm('Do you want to delete this file?')) {
+        doDelete();
+      }
     });
   }
 
