@@ -615,10 +615,32 @@
             $row_id        = xssclean($this->input->post('row_id'));
             $document_type = xssclean($this->input->post('document_type'));
             $ArrExtensions = FILE_EXTENSIONS;
+            $normalized_type = $this->normalizeTestListDocumentType($document_type);
+
+            if ($enquiry_id < 1 || $normalized_type === '') {
+                echo json_encode(array('status' => 'error', 'msg' => 'Document Type is required.'));
+                return;
+            }
 
             $row_id = ($row_id !== '' && $row_id !== null) ? (int) $row_id : null;
+            if ($row_id !== null && $row_id > 0) {
+                if ($this->WorkInProcessModel->isDuplicateTestListDocumentType($enquiry_id, $document_type, $row_id)) {
+                    echo json_encode(array('status' => 'error', 'msg' => 'This Document Type already exists for this enquiry.'));
+                    return;
+                }
+            } else {
+                if ($this->WorkInProcessModel->isDuplicateTestListDocumentType($enquiry_id, $document_type)) {
+                    echo json_encode(array('status' => 'error', 'msg' => 'This Document Type already exists for this enquiry.'));
+                    return;
+                }
+            }
+
             if ($row_id === null || $row_id < 1) {
                 $row_id = $this->WorkInProcessModel->insertTestListDocumentRow($enquiry_id, $document_type ?: '', array());
+                if ($row_id < 1) {
+                    echo json_encode(array('status' => 'error', 'msg' => 'This Document Type already exists for this enquiry.'));
+                    return;
+                }
             }
 
             $folder_name = $this->buildTestListFolderName($document_type, $row_id);
@@ -654,7 +676,11 @@
             }
 
             if (count($uploaded) > 0) {
-                $this->WorkInProcessModel->updateTestListDocumentRow($row_id, $enquiry_id, $document_type ?: '', $uploaded);
+                $updated = $this->WorkInProcessModel->updateTestListDocumentRow($row_id, $enquiry_id, $document_type ?: '', $uploaded);
+                if (!$updated) {
+                    echo json_encode(array('status' => 'error', 'msg' => 'This Document Type already exists for this enquiry.'));
+                    return;
+                }
             }
 
             echo json_encode(array('status' => 'success', 'id' => $row_id, 'files' => $uploaded, 'folder_name' => $folder_name));
@@ -702,6 +728,21 @@
                 $existingById[(int) $er['id']] = $er;
             }
 
+            // Validate duplicates in submitted grid (per enquiry).
+            $seenTypes = array();
+            foreach ($rows as $row) {
+                $doc_type = isset($row[1]) ? $row[1] : '';
+                $normalized = $this->normalizeTestListDocumentType($doc_type);
+                if ($normalized === '') {
+                    continue;
+                }
+                if (isset($seenTypes[$normalized])) {
+                    echo json_encode(array('status' => 'error', 'msg' => 'Duplicate Document Type is not allowed in the same enquiry.'));
+                    return;
+                }
+                $seenTypes[$normalized] = 1;
+            }
+
             $keepIds = array();
             foreach ($rows as $row) {
                 $id = isset($row[0]) ? $row[0] : '';
@@ -709,9 +750,16 @@
                 $id = ($id !== '' && $id !== null) ? (int) $id : 0;
                 if ($id > 0) {
                     $keepIds[] = $id;
-                    $this->WorkInProcessModel->updateTestListDocumentType($id, $enquiry_id, $doc_type);
+                    if (!$this->WorkInProcessModel->updateTestListDocumentType($id, $enquiry_id, $doc_type)) {
+                        echo json_encode(array('status' => 'error', 'msg' => 'Duplicate Document Type is not allowed in the same enquiry.'));
+                        return;
+                    }
                 } elseif ($doc_type !== '') {
-                    $this->WorkInProcessModel->insertTestListDocumentRow($enquiry_id, $doc_type, array());
+                    $newId = $this->WorkInProcessModel->insertTestListDocumentRow($enquiry_id, $doc_type, array());
+                    if ($newId < 1) {
+                        echo json_encode(array('status' => 'error', 'msg' => 'Duplicate Document Type is not allowed in the same enquiry.'));
+                        return;
+                    }
                 }
             }
 
@@ -727,6 +775,11 @@
                 }
             }
             echo json_encode(array('status' => 'success', 'msg' => 'Saved successfully'));
+        }
+
+        private function normalizeTestListDocumentType($value)
+        {
+            return strtolower(trim(preg_replace('/\s+/', ' ', (string) $value)));
         }
 
         /**

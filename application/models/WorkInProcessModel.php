@@ -11500,6 +11500,44 @@ public function updateYarnProgrammeDetailss($req_data, $id)
         return $rows;
     }
 
+    private function normalizeTestListDocumentType($document_type)
+    {
+        $value = preg_replace('/\s+/', ' ', trim((string) $document_type));
+        return strtolower($value);
+    }
+
+    /**
+     * Check whether a document type already exists for an enquiry.
+     * Comparison is case-insensitive and trims repeated spaces.
+     * @param int $enquiry_id
+     * @param string $document_type
+     * @param int $exclude_id skip this row id while checking (for update)
+     * @return bool
+     */
+    public function isDuplicateTestListDocumentType($enquiry_id, $document_type, $exclude_id = 0)
+    {
+        $needle = $this->normalizeTestListDocumentType($document_type);
+        if ($needle === '') {
+            return false;
+        }
+
+        $this->db->select('id, document_type')
+            ->from(KN_TESTLIST_DOCUMENT_UPLOADS)
+            ->where('enquiry_id', (int) $enquiry_id);
+        if ((int) $exclude_id > 0) {
+            $this->db->where('id !=', (int) $exclude_id);
+        }
+        $rows = $this->db->get()->result_array();
+
+        foreach ($rows as $row) {
+            $existing = $this->normalizeTestListDocumentType(isset($row['document_type']) ? $row['document_type'] : '');
+            if ($existing !== '' && $existing === $needle) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Insert new test list document row.
      * @param int $enquiry_id
@@ -11509,6 +11547,9 @@ public function updateYarnProgrammeDetailss($req_data, $id)
      */
     public function insertTestListDocumentRow($enquiry_id, $document_type, $uploaded_files = array())
     {
+        if ($this->isDuplicateTestListDocumentType($enquiry_id, $document_type)) {
+            return 0;
+        }
         $data = array(
             'enquiry_id'    => (int) $enquiry_id,
             'document_type' => $document_type,
@@ -11532,6 +11573,9 @@ public function updateYarnProgrammeDetailss($req_data, $id)
     {
         $id = (int) $id;
         $enquiry_id = (int) $enquiry_id;
+        if ($this->isDuplicateTestListDocumentType($enquiry_id, $document_type, $id)) {
+            return false;
+        }
         $row = $this->db->select('uploaded_files')->get_where(KN_TESTLIST_DOCUMENT_UPLOADS, array('id' => $id, 'enquiry_id' => $enquiry_id))->row_array();
         if (empty($row)) {
             return false;
@@ -11559,6 +11603,9 @@ public function updateYarnProgrammeDetailss($req_data, $id)
      */
     public function updateTestListDocumentType($id, $enquiry_id, $document_type)
     {
+        if ($this->isDuplicateTestListDocumentType($enquiry_id, $document_type, $id)) {
+            return false;
+        }
         $this->db->where(array('id' => (int) $id, 'enquiry_id' => (int) $enquiry_id));
         return $this->db->update(KN_TESTLIST_DOCUMENT_UPLOADS, array(
             'document_type' => $document_type,

@@ -10,6 +10,7 @@ $(document).ready(function () {
   var currentUploadRow = -1;
   var fileUploadStateInterval = null;
   var pendingDeleteRowIds = [];
+  var suppressDocTypeOnChange = false;
 
   var DOCUMENT_TYPES = ['Spec Sheet', 'Test Report', 'Certificate', 'Other'];
 
@@ -73,6 +74,20 @@ $(document).ready(function () {
       allowInsertRow: true,
       allowDeleteColumn: false,
       allowInsertColumn: false,
+      onbeforechange: function (instance, cell, x, y, value) {
+        var colIndex = parseInt(x, 10);
+        var rowIndex = resolveGridRowIndex(cell, y);
+        if (colIndex === 1 && !suppressDocTypeOnChange) {
+          var nextValue = String(value || '').trim();
+          if (!nextValue) return value;
+          var duplicateRow = findDuplicateDocTypeRow(rowIndex, nextValue);
+          if (duplicateRow >= 0) {
+            showDuplicateDocTypeMessage(nextValue, duplicateRow, rowIndex);
+            return '';
+          }
+        }
+        return value;
+      },
       onbeforedeleterow: function (instance, rowNumber, numOfRows) {
         pendingDeleteRowIds = [];
         var start = parseInt(rowNumber, 10);
@@ -94,15 +109,28 @@ $(document).ready(function () {
         setTimeout(function () { updateAllUploadViewStates(); }, 50);
       },
       onchange: function (instance, cell, col, row) {
-        if (col === 1 || col === 0) {
-          setTimeout(function () { updateUploadViewRowState(row); }, 50);
+        var colIndex = parseInt(col, 10);
+        var rowIndex = resolveGridRowIndex(cell, row);
+        if (colIndex === 1 || colIndex === 0) {
+          setTimeout(function () {
+            if (colIndex === 1 && !suppressDocTypeOnChange && !enforceUniqueDocTypeForRow(rowIndex)) {
+              return;
+            }
+            updateUploadViewRowState(rowIndex);
+          }, 50);
         }
       },
       oninsertrow: function () {
-        setTimeout(function () { updateAllUploadViewStates(); }, 50);
+        setTimeout(function () {
+          enforceUniqueDocTypesInGrid();
+          updateAllUploadViewStates();
+        }, 50);
       },
       onmoverow: function () {
-        setTimeout(function () { updateAllUploadViewStates(); }, 50);
+        setTimeout(function () {
+          enforceUniqueDocTypesInGrid();
+          updateAllUploadViewStates();
+        }, 50);
       }
     };
 
@@ -112,7 +140,10 @@ $(document).ready(function () {
         var spreadsheet = jexcel(this.$el, file_upload_grid);
         Object.assign(this, spreadsheet);
         bindFileUploadGridEvents();
-        setTimeout(function () { updateAllUploadViewStates(); }, 150);
+        setTimeout(function () {
+          enforceUniqueDocTypesInGrid();
+          updateAllUploadViewStates();
+        }, 150);
       },
       methods: {
         saveData: function () {
@@ -130,6 +161,11 @@ $(document).ready(function () {
 
   function saveFileUploadGrid() {
     if (!file_upload_grid_vm || !file_upload_grid_vm.getData) return;
+    var duplicateInfo = findDuplicateDocTypeInGrid();
+    if (duplicateInfo) {
+      showDuplicateDocTypeMessage(duplicateInfo.docType, duplicateInfo.firstRow, duplicateInfo.duplicateRow);
+      return;
+    }
     var data = file_upload_grid_vm.getData();
     $.ajax({
       type: 'POST',
@@ -156,6 +192,107 @@ $(document).ready(function () {
         }
       }
     });
+  }
+
+  function normalizeDocType(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function resolveGridRowIndex(cell, fallbackRow) {
+    if (cell && typeof $(cell).attr === 'function') {
+      var attrRow = parseInt($(cell).attr('data-y'), 10);
+      if (!isNaN(attrRow) && attrRow >= 0) {
+        return attrRow;
+      }
+    }
+    var parsed = parseInt(fallbackRow, 10);
+    if (!isNaN(parsed) && parsed >= 0) {
+      return parsed;
+    }
+    return 0;
+  }
+
+  function findDuplicateDocTypeRow(targetRow, docType) {
+    if (!file_upload_grid_vm || !file_upload_grid_vm.getData) return -1;
+    var matchType = normalizeDocType(docType);
+    if (!matchType) return -1;
+    var gridData = file_upload_grid_vm.getData();
+    for (var i = 0; i < gridData.length; i++) {
+      if (i === targetRow) continue;
+      var existingType = normalizeDocType(gridData[i] && gridData[i][1] != null ? gridData[i][1] : '');
+      if (existingType && existingType === matchType) return i;
+    }
+    return -1;
+  }
+
+  function findDuplicateDocTypeInGrid() {
+    if (!file_upload_grid_vm || !file_upload_grid_vm.getData) return null;
+    var seen = {};
+    var gridData = file_upload_grid_vm.getData();
+    for (var i = 0; i < gridData.length; i++) {
+      var rawType = gridData[i] && gridData[i][1] != null ? String(gridData[i][1]).trim() : '';
+      var key = normalizeDocType(rawType);
+      if (!key) continue;
+      if (Object.prototype.hasOwnProperty.call(seen, key)) {
+        return { docType: rawType, firstRow: seen[key], duplicateRow: i };
+      }
+      seen[key] = i;
+    }
+    return null;
+  }
+
+  function showDuplicateDocTypeMessage(docType, firstRow, duplicateRow) {
+    var typeLabel = String(docType || '').trim() || 'Selected type';
+    var msg = typeLabel + ' is already selected in row ' + (firstRow + 1) + '. Please choose a different Document Type for row ' + (duplicateRow + 1) + '.';
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({ title: 'Duplicate Document Type', text: msg, icon: 'warning', customClass: { confirmButton: 'btn btn-info' } });
+    } else {
+      alert(msg);
+    }
+  }
+
+  function enforceUniqueDocTypeForRow(row) {
+    var docType = getDocTypeForRow(row);
+    if (!docType) return true;
+    var duplicateRow = findDuplicateDocTypeRow(row, docType);
+    if (duplicateRow < 0) return true;
+    showDuplicateDocTypeMessage(docType, duplicateRow, row);
+    suppressDocTypeOnChange = true;
+    file_upload_grid_vm.setValueFromCoords(1, row, '');
+    suppressDocTypeOnChange = false;
+    updateUploadViewRowState(row);
+    return false;
+  }
+
+  function enforceUniqueDocTypesInGrid() {
+    if (!file_upload_grid_vm || !file_upload_grid_vm.getData) return true;
+    var gridData = file_upload_grid_vm.getData();
+    var seen = {};
+    var firstDuplicate = null;
+    var hasDuplicate = false;
+
+    for (var i = 0; i < gridData.length; i++) {
+      var rawType = gridData[i] && gridData[i][1] != null ? String(gridData[i][1]).trim() : '';
+      var key = normalizeDocType(rawType);
+      if (!key) continue;
+      if (!Object.prototype.hasOwnProperty.call(seen, key)) {
+        seen[key] = i;
+        continue;
+      }
+      if (!firstDuplicate) {
+        firstDuplicate = { docType: rawType, firstRow: seen[key], duplicateRow: i };
+      }
+      hasDuplicate = true;
+      suppressDocTypeOnChange = true;
+      file_upload_grid_vm.setValueFromCoords(1, i, '');
+      suppressDocTypeOnChange = false;
+      updateUploadViewRowState(i);
+    }
+
+    if (firstDuplicate) {
+      showDuplicateDocTypeMessage(firstDuplicate.docType, firstDuplicate.firstRow, firstDuplicate.duplicateRow);
+    }
+    return !hasDuplicate;
   }
 
   function getDocTypeForRow(row) {
@@ -288,6 +425,11 @@ $(document).ready(function () {
         updateUploadViewRowState(invalidRow);
         return;
       }
+      if (!enforceUniqueDocTypeForRow(targetRow)) {
+        this.value = '';
+        currentUploadRow = -1;
+        return;
+      }
 
       var formData = new FormData();
       formData.append('enquiry_id', enquiry_id);
@@ -333,6 +475,14 @@ $(document).ready(function () {
             if (rowId) rowFilesById[rowId] = existingFiles;
             file_upload_grid_vm.setValueFromCoords(3, targetRow, 'View' + (existingFiles.length ? ' (' + existingFiles.length + ')' : ''));
             updateUploadViewRowState(targetRow);
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({
+                title: 'Upload failed',
+                text: (res && res.msg) ? res.msg : 'Unable to upload files.',
+                icon: 'error',
+                customClass: { confirmButton: 'btn btn-info' }
+              });
+            }
           }
         },
         error: function () {
