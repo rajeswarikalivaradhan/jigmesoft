@@ -529,6 +529,7 @@ option {
     <!-- Test Data -->
     <script type="text/javascript" src="<?php echo base_url('assets/custom/products.js'); ?>"></script>
     <script type="text/javascript" src="<?php echo base_url('assets/custom/file_upload_grid.js'); ?>"></script>
+    <script type="text/javascript" src="<?php echo base_url('assets/custom/assortment_design.js'); ?>"></script>
     <?php 
     if ($loguserid == 3) {
         echo' <script type="text/javascript" src="'. base_url() .'assets/custom/wipform.js"></script>';

@@ -1,6 +1,7 @@
 <ul class="nav nav-tabs cad d-flex" role="tablist">
     <li class="active" role="presentation"><a data-toggle="tab" href="#management_test_list" role="tab">TEST LIST</a></li>
     <li role="presentation"><a data-toggle="tab" href="#management_file_upload" role="tab">FILE UPLOAD</a></li>
+    <li role="presentation"><a data-toggle="tab" href="#management_assortment_design" role="tab">ASSORTMENT DESIGN</a></li>
 </ul>
 
 <style>
@@ -132,6 +133,62 @@
             }
             #fileUploadViewModalImages .file-delete-btn i { font-size: 12px; }
             #fileUploadViewModalImages .file-delete-btn span { display: none; }
+
+            #management_assortment_design .assortment-wrap {
+                border: 1px solid #d7dde8;
+                background: #ffffff;
+                padding: 10px;
+            }
+            #management_assortment_design .assortment-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #0d2f67;
+                margin-bottom: 10px;
+            }
+            #management_assortment_design .assortment-yellow {
+                border: 1px solid #d7dde8;
+                margin-bottom: 12px;
+                padding: 8px;
+            }
+            #management_assortment_design .assortment-red {
+                border: 1px solid #d7dde8;
+                margin-bottom: 12px;
+                padding: 0;
+            }
+            #management_assortment_design .assortment-green {
+                border: 1px solid #d7dde8;
+                margin-bottom: 12px;
+                padding: 0;
+            }
+            #management_assortment_design .assortment-red-grid,
+            #management_assortment_design .assortment-green-grid {
+                min-height: 90px;
+            }
+            #management_assortment_design .assortment-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            #management_assortment_design .assortment-table th,
+            #management_assortment_design .assortment-table td {
+                border: 1px solid #cfd4dc;
+                padding: 6px 8px;
+                font-size: 12px;
+                text-align: center;
+                vertical-align: middle;
+            }
+            #management_assortment_design .assortment-table thead th {
+                background: #f4f6fa;
+                font-weight: 600;
+            }
+            #management_assortment_design .assortment-left {
+                text-align: left !important;
+            }
+            #management_assortment_design .summary-label {
+                background: #f8fafc;
+                font-weight: 600;
+                text-align: left !important;
+                min-width: 180px;
+            }
         </style>
         <div id="fileUploadGridSheet"></div>
         <div class="card border-0">
@@ -140,6 +197,16 @@
             </div>
         </div>
         <input type="file" id="fileUploadGridInput" multiple accept="image/*,.pdf" style="display:none;">
+    </div>
+    <div id="management_assortment_design" class="tab-pane fade">
+        <div class="assortment-wrap">
+            <div class="assortment-title">ASSORTMENT DESIGN</div>
+            <!-- Red section -->
+            <div class="assortment-red table-responsive">
+                <div id="assortmentRedGrid" class="assortment-red-grid"></div>
+            </div>
+
+        </div>
     </div>
 </div>
 
@@ -157,4 +224,3 @@
         </div>
     </div>
 </div>
-
