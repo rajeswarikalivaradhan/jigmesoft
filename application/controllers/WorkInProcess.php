@@ -974,6 +974,45 @@
             echo json_encode($data);
         }
 
+        public function getAssortmentDesignSheetData() {
+            $enquiry_id = (int) xssclean($this->input->get_post('enquiry_id'));
+            if ($enquiry_id < 1) {
+                echo json_encode(array('status' => 'error', 'msg' => 'Invalid enquiry id'));
+                return;
+            }
+            $row = $this->WorkInProcessModel->getAssortmentDesignSheetData($enquiry_id);
+            echo json_encode(array(
+                'status' => 'success',
+                'sheet_data' => !empty($row) ? $row['sheet_data'] : null
+            ));
+        }
+
+        public function saveAssortmentDesignSheetData() {
+            $enquiry_id = (int) xssclean($this->input->post('enquiry_id'));
+            $sheet_data = $this->input->post('sheet_data', false);
+            if ($enquiry_id < 1) {
+                echo json_encode(array('status' => 'error', 'msg' => 'Invalid enquiry id'));
+                return;
+            }
+            if ($sheet_data === null || $sheet_data === '') {
+                echo json_encode(array('status' => 'error', 'msg' => 'Sheet data is required'));
+                return;
+            }
+
+            $decoded = json_decode($sheet_data, true);
+            if (!is_array($decoded)) {
+                echo json_encode(array('status' => 'error', 'msg' => 'Invalid sheet data'));
+                return;
+            }
+
+            $saved = $this->WorkInProcessModel->saveAssortmentDesignSheetData($enquiry_id, json_encode($decoded));
+            if (!$saved) {
+                echo json_encode(array('status' => 'error', 'msg' => 'Unable to save data'));
+                return;
+            }
+            echo json_encode(array('status' => 'success', 'msg' => 'Saved successfully'));
+        }
+
         //*************** ASSORTMENT TYPE ENDS HERE *************** //
         
         //*************** PACKING STARTS HERE *************** //

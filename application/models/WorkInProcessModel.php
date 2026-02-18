@@ -11687,5 +11687,47 @@ public function updateYarnProgrammeDetailss($req_data, $id)
         $this->db->where(array('id' => (int) $id, 'enquiry_id' => (int) $enquiry_id));
         return $this->db->delete(KN_TESTLIST_DOCUMENT_UPLOADS);
     }
+
+    /**
+     * Get saved assortment-design spreadsheet JSON by enquiry id.
+     * @param int $enquiry_id
+     * @return array|null
+     */
+    public function getAssortmentDesignSheetData($enquiry_id)
+    {
+        return $this->db->select('id, enquiry_id, sheet_data, updated_at')
+            ->from('tbl_wip_assortment_design_sheet')
+            ->where('enquiry_id', (int) $enquiry_id)
+            ->limit(1)
+            ->get()
+            ->row_array();
+    }
+
+    /**
+     * Insert/update assortment-design spreadsheet JSON by enquiry id.
+     * @param int $enquiry_id
+     * @param string $sheet_data_json
+     * @return bool
+     */
+    public function saveAssortmentDesignSheetData($enquiry_id, $sheet_data_json)
+    {
+        $enquiry_id = (int) $enquiry_id;
+        $existing = $this->getAssortmentDesignSheetData($enquiry_id);
+
+        if (!empty($existing)) {
+            $this->db->where('id', (int) $existing['id']);
+            return (bool) $this->db->update('tbl_wip_assortment_design_sheet', array(
+                'sheet_data' => $sheet_data_json,
+                'updated_at' => $this->mysqldatetime
+            ));
+        }
+
+        return (bool) $this->db->insert('tbl_wip_assortment_design_sheet', array(
+            'enquiry_id' => $enquiry_id,
+            'sheet_data' => $sheet_data_json,
+            'created_at' => $this->mysqldatetime,
+            'updated_at' => $this->mysqldatetime
+        ));
+    }
     
 }

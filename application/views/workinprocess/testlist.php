@@ -205,6 +205,11 @@
             <div class="assortment-red table-responsive">
                 <div id="assortmentRedGrid" class="assortment-red-grid"></div>
             </div>
+            <div class="card border-0">
+                <div class="card-footer clearfix bgc-white border-0 p-3">
+                    <button class="btn btn-info btn-sm mar-l-5rem pull-right" id="assortmentDesignSave">SAVE</button>
+                </div>
+            </div>
 
         </div>
     </div>

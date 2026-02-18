@@ -10,7 +10,15 @@
     'Gross Wt (Kgs):',
     'Carton Nos:'
   ];
+  var DISABLED_TOTAL_LABELS = [
+    'No. of Cartons:',
+    'Sub Total Qty:',
+    'Net Wt (Kgs):',
+    'Gross Wt (Kgs):',
+    'Carton Nos:'
+  ];
   var isAutoUpdating = false;
+  var loadStarted = false;
 
   function getGridApi(instance) {
     if (instance && typeof instance.getValueFromCoords === 'function' && typeof instance.setValueFromCoords === 'function') {
@@ -40,6 +48,14 @@
     if (row < 0) return false;
     var label = String(getCellValue(instance, 4, row) || '').trim();
     return SUMMARY_LABELS.indexOf(label) >= 0;
+  }
+
+  function getSummaryLabel(instance, row) {
+    return String(getCellValue(instance, 4, row) || '').trim();
+  }
+
+  function isDisabledTotalRow(instance, row) {
+    return DISABLED_TOTAL_LABELS.indexOf(getSummaryLabel(instance, row)) >= 0;
   }
 
   function clearFrozenColumnsAfterFirstRow(instance) {
@@ -87,7 +103,25 @@
   function setNumericCellValue(instance, col, row, value) {
     var api = getGridApi(instance);
     if (!api) return;
-    api.setValueFromCoords(col, row, value ? value : '');
+    api.setValueFromCoords(col, row, value ? value : '', true);
+  }
+
+  function setCellValue(instance, col, row, value) {
+    var api = getGridApi(instance);
+    if (!api) return;
+    api.setValueFromCoords(col, row, value == null ? '' : value, true);
+  }
+
+  function getSheetDataForSave(instance) {
+    var api = getGridApi(instance);
+    if (!api) return [];
+    if (typeof api.getData === 'function') {
+      return api.getData();
+    }
+    if (api.options && api.options.data) {
+      return api.options.data;
+    }
+    return [];
   }
 
   function sumRowAcrossSizes(instance, row) {
@@ -105,7 +139,7 @@
     var api = getGridApi(instance);
     if (!api) return;
     var totalCol = getTotalColumnIndex(api);
-    setNumericCellValue(api, totalCol, row, sumRowAcrossSizes(api, row));
+    setCellValue(api, totalCol, row, '');
   }
 
   function recalcSummaryRows(instance) {
@@ -142,7 +176,7 @@
     }
 
     if (qtyPerCartonRow >= 0) {
-      setNumericCellValue(api, totalCol, qtyPerCartonRow, sumRowAcrossSizes(api, qtyPerCartonRow));
+      setCellValue(api, totalCol, qtyPerCartonRow, '');
     }
     if (noOfCartonsRow >= 0) {
       setNumericCellValue(api, totalCol, noOfCartonsRow, sumRowAcrossSizes(api, noOfCartonsRow));
@@ -156,6 +190,7 @@
     if (grossWtRow >= 0) {
       setNumericCellValue(api, totalCol, grossWtRow, sumRowAcrossSizes(api, grossWtRow));
     }
+
   }
 
   function recalcAllRows(instance) {
@@ -175,14 +210,14 @@
       { title: 'Unit Packing Code (UPC)', width: 130, type: 'text', readOnly: false },
       { title: 'Description of Goods', width: 150, type: 'text', readOnly: false },
       { title: 'Combo / Colour', width: 110, type: 'text', readOnly: false },
-      { title: 'XS', width: 50, type: 'numeric', mask: '#,##' },
-      { title: 'S', width: 50, type: 'numeric', mask: '#,##' },
-      { title: 'M', width: 50, type: 'numeric', mask: '#,##' },
-      { title: 'L', width: 50, type: 'numeric', mask: '#,##' },
-      { title: 'XL', width: 50, type: 'numeric', mask: '#,##' },
-      { title: 'XXL', width: 50, type: 'numeric', mask: '#,##' },
-      { title: '3XL', width: 50, type: 'numeric', mask: '#,##' },
-      { title: 'Total', width: 70, readOnly: true }
+      { title: 'XS', width: 50, type: 'text' },
+      { title: 'S', width: 50, type: 'text' },
+      { title: 'M', width: 50, type: 'text' },
+      { title: 'L', width: 50, type: 'text' },
+      { title: 'XL', width: 50, type: 'text' },
+      { title: 'XXL', width: 50, type: 'text' },
+      { title: '3XL', width: 50, type: 'text' },
+      { title: 'Total', width: 70, type: 'text', readOnly: false }
     ];
 
     var redData = [
@@ -209,8 +244,10 @@
       allowInsertColumn: false,
       updateTable: function (instance, cell, col, row) {
         var rowIndex = parseInt($(cell).attr('data-y'), 10);
-        if (col !== getTotalColumnIndex(instance)) {
-          $(cell).removeClass('readonly');
+        $(cell).removeClass('readonly');
+        if (!isNaN(rowIndex) && col === getTotalColumnIndex(instance) && isDisabledTotalRow(instance, rowIndex)) {
+          $(cell).addClass('readonly');
+          cell.style.background = '#f8fafc';
         }
         if (!isNaN(rowIndex) && isSummaryRow(instance, rowIndex)) {
           if (col === 4) {
@@ -240,6 +277,12 @@
         if (!api) return;
         isAutoUpdating = true;
         try {
+          var totalCol = getTotalColumnIndex(api);
+          if (col === totalCol && isDisabledTotalRow(api, row)) {
+            recalcSummaryRows(api);
+            return;
+          }
+
           if (row > 0 && col >= 0 && col <= 3) {
             api.setValueFromCoords(col, row, '');
             return;
@@ -250,8 +293,10 @@
           var summaryLabel = String(getCellValue(api, 4, row) || '').trim();
           var editableSummaryRows = {
             'No. of Cartons:': true,
+            'UOM:': true,
             'Net Wt (Kgs):': true,
-            'Gross Wt (Kgs):': true
+            'Gross Wt (Kgs):': true,
+            'Carton Nos:': true
           };
           var isEditableSummaryRow = !!editableSummaryRows[summaryLabel];
           var isSizeEdit = col >= sizeStart && col <= sizeEnd;
@@ -286,6 +331,74 @@
     };
   }
 
+  function createAssortmentSheet(redEl, savedData) {
+    var options = buildRedOptions();
+    if (savedData && Array.isArray(savedData) && savedData.length) {
+      options.data = savedData;
+    }
+    redEl.innerHTML = '';
+    assortmentRedSheet = sheetFactory(redEl, options);
+    isAutoUpdating = true;
+    try {
+      recalcAllRows(assortmentRedSheet);
+    } finally {
+      isAutoUpdating = false;
+    }
+  }
+
+  function loadAssortmentSheetData(callback) {
+    if (typeof enquiry_id === 'undefined' || typeof base_path === 'undefined') {
+      callback(null);
+      return;
+    }
+    $.ajax({
+      method: 'GET',
+      url: base_path + 'WorkInProcess/getAssortmentDesignSheetData',
+      data: { enquiry_id: enquiry_id },
+      dataType: 'json',
+      success: function (res) {
+        if (!res || res.status !== 'success' || !res.sheet_data) {
+          callback(null);
+          return;
+        }
+        try {
+          var parsed = JSON.parse(res.sheet_data);
+          callback(Array.isArray(parsed) ? parsed : null);
+        } catch (e) {
+          callback(null);
+        }
+      },
+      error: function () {
+        callback(null);
+      }
+    });
+  }
+
+  function saveAssortmentSheetData() {
+    var api = getGridApi(assortmentRedSheet);
+    if (!api || typeof enquiry_id === 'undefined' || typeof base_path === 'undefined') return;
+    var data = getSheetDataForSave(api);
+    $.ajax({
+      method: 'POST',
+      url: base_path + 'WorkInProcess/saveAssortmentDesignSheetData',
+      dataType: 'json',
+      data: {
+        enquiry_id: enquiry_id,
+        sheet_data: JSON.stringify(data)
+      },
+      success: function (res) {
+        if (res && res.status === 'success') {
+          alert('Saved successfully');
+        } else {
+          alert((res && res.msg) ? res.msg : 'Unable to save');
+        }
+      },
+      error: function () {
+        alert('Unable to save');
+      }
+    });
+  }
+
   function initAssortmentDesignGrid() {
     var redEl = document.getElementById('assortmentRedGrid');
     if (!redEl) return;
@@ -295,9 +408,17 @@
       return;
     }
 
+    if (!assortmentRedSheet && !loadStarted) {
+      loadStarted = true;
+      loadAssortmentSheetData(function (savedData) {
+        createAssortmentSheet(redEl, savedData);
+      });
+      return;
+    }
+
     if (!assortmentRedSheet) {
-      redEl.innerHTML = '';
-      assortmentRedSheet = sheetFactory(redEl, buildRedOptions());
+      createAssortmentSheet(redEl, null);
+      return;
     }
 
     isAutoUpdating = true;
@@ -319,6 +440,11 @@
   });
 
   $(function () {
+    $(document).on('click', '#assortmentDesignSave', function (e) {
+      e.preventDefault();
+      saveAssortmentSheetData();
+    });
+
     if ($('#management_assortment_design').hasClass('active')) {
       initAssortmentDesignGrid();
     }
