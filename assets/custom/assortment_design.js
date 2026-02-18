@@ -10,6 +10,7 @@
     'Gross Wt (Kgs):',
     'Carton Nos:'
   ];
+  var isAutoUpdating = false;
 
   function getGridApi(instance) {
     if (instance && typeof instance.getValueFromCoords === 'function' && typeof instance.setValueFromCoords === 'function') {
@@ -39,6 +40,132 @@
     if (row < 0) return false;
     var label = String(getCellValue(instance, 4, row) || '').trim();
     return SUMMARY_LABELS.indexOf(label) >= 0;
+  }
+
+  function clearFrozenColumnsAfterFirstRow(instance) {
+    var api = getGridApi(instance);
+    if (!api || !api.options || !api.options.data) return;
+    for (var r = 1; r < api.options.data.length; r++) {
+      for (var c = 0; c <= 3; c++) {
+        if (String(getCellValue(api, c, r) || '').trim() !== '') {
+          api.setValueFromCoords(c, r, '');
+        }
+      }
+    }
+  }
+
+  function getTotalColumnIndex(instance) {
+    var api = getGridApi(instance);
+    if (!api || !api.options || !api.options.columns) return 12;
+    return Math.max(api.options.columns.length - 1, 0);
+  }
+
+  function getSizeStartColumnIndex() {
+    return 5;
+  }
+
+  function getSizeEndColumnIndex(instance) {
+    return Math.max(getTotalColumnIndex(instance) - 1, getSizeStartColumnIndex());
+  }
+
+  function findSummaryRow(instance, label) {
+    var api = getGridApi(instance);
+    if (!api || !api.options || !api.options.data) return -1;
+    for (var r = 0; r < api.options.data.length; r++) {
+      if (String(getCellValue(api, 4, r) || '').trim() === label) return r;
+    }
+    return -1;
+  }
+
+  function getNumericCellValue(instance, col, row) {
+    var raw = getCellValue(instance, col, row);
+    var clean = String(raw == null ? '' : raw).replace(/,/g, '').trim();
+    var num = parseFloat(clean);
+    return isNaN(num) ? 0 : num;
+  }
+
+  function setNumericCellValue(instance, col, row, value) {
+    var api = getGridApi(instance);
+    if (!api) return;
+    api.setValueFromCoords(col, row, value ? value : '');
+  }
+
+  function sumRowAcrossSizes(instance, row) {
+    var start = getSizeStartColumnIndex();
+    var end = getSizeEndColumnIndex(instance);
+    var total = 0;
+    for (var c = start; c <= end; c++) {
+      total += getNumericCellValue(instance, c, row);
+    }
+    return total;
+  }
+
+  function recalcDetailRowTotal(instance, row) {
+    if (isSummaryRow(instance, row)) return;
+    var api = getGridApi(instance);
+    if (!api) return;
+    var totalCol = getTotalColumnIndex(api);
+    setNumericCellValue(api, totalCol, row, sumRowAcrossSizes(api, row));
+  }
+
+  function recalcSummaryRows(instance) {
+    var api = getGridApi(instance);
+    if (!api) return;
+
+    var qtyPerCartonRow = findSummaryRow(api, 'Qty. Per Carton:');
+    var noOfCartonsRow = findSummaryRow(api, 'No. of Cartons:');
+    var subTotalQtyRow = findSummaryRow(api, 'Sub Total Qty:');
+    var netWtRow = findSummaryRow(api, 'Net Wt (Kgs):');
+    var grossWtRow = findSummaryRow(api, 'Gross Wt (Kgs):');
+    var totalCol = getTotalColumnIndex(api);
+    var start = getSizeStartColumnIndex();
+    var end = getSizeEndColumnIndex(api);
+
+    if (qtyPerCartonRow >= 0) {
+      for (var c2 = start; c2 <= end; c2++) {
+        var sizeSum = 0;
+        for (var r2 = 0; r2 < api.options.data.length; r2++) {
+          if (r2 === qtyPerCartonRow || r2 === noOfCartonsRow || r2 === subTotalQtyRow) continue;
+          if (isSummaryRow(api, r2)) continue;
+          sizeSum += getNumericCellValue(api, c2, r2);
+        }
+        setNumericCellValue(api, c2, qtyPerCartonRow, sizeSum);
+      }
+    }
+
+    if (qtyPerCartonRow >= 0 && noOfCartonsRow >= 0 && subTotalQtyRow >= 0) {
+      for (var c = start; c <= end; c++) {
+        var qtyPerCarton = getNumericCellValue(api, c, qtyPerCartonRow);
+        var noOfCartons = getNumericCellValue(api, c, noOfCartonsRow);
+        setNumericCellValue(api, c, subTotalQtyRow, qtyPerCarton * noOfCartons);
+      }
+    }
+
+    if (qtyPerCartonRow >= 0) {
+      setNumericCellValue(api, totalCol, qtyPerCartonRow, sumRowAcrossSizes(api, qtyPerCartonRow));
+    }
+    if (noOfCartonsRow >= 0) {
+      setNumericCellValue(api, totalCol, noOfCartonsRow, sumRowAcrossSizes(api, noOfCartonsRow));
+    }
+    if (subTotalQtyRow >= 0) {
+      setNumericCellValue(api, totalCol, subTotalQtyRow, sumRowAcrossSizes(api, subTotalQtyRow));
+    }
+    if (netWtRow >= 0) {
+      setNumericCellValue(api, totalCol, netWtRow, sumRowAcrossSizes(api, netWtRow));
+    }
+    if (grossWtRow >= 0) {
+      setNumericCellValue(api, totalCol, grossWtRow, sumRowAcrossSizes(api, grossWtRow));
+    }
+  }
+
+  function recalcAllRows(instance) {
+    var api = getGridApi(instance);
+    if (!api || !api.options || !api.options.data) return;
+    clearFrozenColumnsAfterFirstRow(api);
+    for (var r = 0; r < api.options.data.length; r++) {
+      if (!isSummaryRow(api, r)) recalcDetailRowTotal(api, r);
+    }
+    recalcSummaryRows(api);
   }
 
   function buildRedOptions() {
@@ -76,12 +203,13 @@
       tableOverflow: true,
       tableWidth: '100%',
       tableHeight: '360px',
+      freezeColumns: 4,
       allowInsertRow: true,
       allowDeleteColumn: false,
       allowInsertColumn: false,
       updateTable: function (instance, cell, col, row) {
         var rowIndex = parseInt($(cell).attr('data-y'), 10);
-        if (col !== 12) {
+        if (col !== getTotalColumnIndex(instance)) {
           $(cell).removeClass('readonly');
         }
         if (!isNaN(rowIndex) && isSummaryRow(instance, rowIndex)) {
@@ -99,25 +227,62 @@
           cell.style.background = '';
           if (col === 5 || col >= 6) cell.style.fontWeight = '';
         }
+        if (!isNaN(rowIndex) && rowIndex > 0 && col >= 0 && col <= 3) {
+          cell.style.background = '#f8fafc';
+        }
         if (col >= 0 && col <= 4) {
           cell.style.textAlign = 'left';
         }
       },
       onchange: function (instance, cell, col, row) {
+        if (isAutoUpdating) return;
         var api = getGridApi(instance);
         if (!api) return;
-        if (isSummaryRow(instance, row)) return;
-        if (col >= 5 && col <= 11) {
-          var total = 0;
-          for (var i = 5; i <= 11; i++) {
-            var val = parseFloat(getCellValue(api, i, row)) || 0;
-            total += val;
+        isAutoUpdating = true;
+        try {
+          if (row > 0 && col >= 0 && col <= 3) {
+            api.setValueFromCoords(col, row, '');
+            return;
           }
-          api.setValueFromCoords(12, row, total ? total : '');
+
+          var sizeStart = getSizeStartColumnIndex();
+          var sizeEnd = getSizeEndColumnIndex(api);
+          var summaryLabel = String(getCellValue(api, 4, row) || '').trim();
+          var editableSummaryRows = {
+            'No. of Cartons:': true,
+            'Net Wt (Kgs):': true,
+            'Gross Wt (Kgs):': true
+          };
+          var isEditableSummaryRow = !!editableSummaryRows[summaryLabel];
+          var isSizeEdit = col >= sizeStart && col <= sizeEnd;
+          if (!isSizeEdit || (isSummaryRow(instance, row) && !isEditableSummaryRow)) return;
+
+          if (!isSummaryRow(instance, row)) {
+            recalcDetailRowTotal(api, row);
+          }
+          recalcSummaryRows(api);
+        } finally {
+          isAutoUpdating = false;
         }
       },
-      oninsertrow: function () {},
-      ondeleterow: function () {}
+      oninsertrow: function (instance) {
+        if (isAutoUpdating) return;
+        isAutoUpdating = true;
+        try {
+          recalcAllRows(instance);
+        } finally {
+          isAutoUpdating = false;
+        }
+      },
+      ondeleterow: function (instance) {
+        if (isAutoUpdating) return;
+        isAutoUpdating = true;
+        try {
+          recalcAllRows(instance);
+        } finally {
+          isAutoUpdating = false;
+        }
+      }
     };
   }
 
@@ -133,6 +298,13 @@
     if (!assortmentRedSheet) {
       redEl.innerHTML = '';
       assortmentRedSheet = sheetFactory(redEl, buildRedOptions());
+    }
+
+    isAutoUpdating = true;
+    try {
+      recalcAllRows(assortmentRedSheet);
+    } finally {
+      isAutoUpdating = false;
     }
   }
 
