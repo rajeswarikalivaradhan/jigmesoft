@@ -124,6 +124,52 @@
     return [];
   }
 
+  function getColumnTitles(instance) {
+    var api = getGridApi(instance);
+    if (!api || !api.options || !api.options.columns) return [];
+    var out = [];
+    for (var i = 0; i < api.options.columns.length; i++) {
+      out.push(String(api.options.columns[i].title || ''));
+    }
+    return out;
+  }
+
+  function serializeSheetData(instance) {
+    var matrix = getSheetDataForSave(instance);
+    var columns = getColumnTitles(instance);
+    var rows = [];
+    for (var r = 0; r < matrix.length; r++) {
+      var rowObj = {};
+      for (var c = 0; c < columns.length; c++) {
+        rowObj[columns[c]] = (matrix[r] && typeof matrix[r][c] !== 'undefined') ? matrix[r][c] : '';
+      }
+      rows.push(rowObj);
+    }
+    return {
+      version: 2,
+      columns: columns,
+      rows: rows
+    };
+  }
+
+  function deserializeSheetData(saved) {
+    if (!saved) return null;
+    if (Array.isArray(saved)) return saved; // legacy format
+    if (!saved.rows || !Array.isArray(saved.rows) || !saved.columns || !Array.isArray(saved.columns)) return null;
+
+    var matrix = [];
+    for (var r = 0; r < saved.rows.length; r++) {
+      var rowObj = saved.rows[r] || {};
+      var row = [];
+      for (var c = 0; c < saved.columns.length; c++) {
+        var title = saved.columns[c];
+        row.push(typeof rowObj[title] === 'undefined' ? '' : rowObj[title]);
+      }
+      matrix.push(row);
+    }
+    return matrix;
+  }
+
   function sumRowAcrossSizes(instance, row) {
     var start = getSizeStartColumnIndex();
     var end = getSizeEndColumnIndex(instance);
@@ -333,8 +379,9 @@
 
   function createAssortmentSheet(redEl, savedData) {
     var options = buildRedOptions();
-    if (savedData && Array.isArray(savedData) && savedData.length) {
-      options.data = savedData;
+    var matrix = deserializeSheetData(savedData);
+    if (matrix && matrix.length) {
+      options.data = matrix;
     }
     redEl.innerHTML = '';
     assortmentRedSheet = sheetFactory(redEl, options);
@@ -362,8 +409,7 @@
           return;
         }
         try {
-          var parsed = JSON.parse(res.sheet_data);
-          callback(Array.isArray(parsed) ? parsed : null);
+          callback(JSON.parse(res.sheet_data));
         } catch (e) {
           callback(null);
         }
@@ -377,14 +423,14 @@
   function saveAssortmentSheetData() {
     var api = getGridApi(assortmentRedSheet);
     if (!api || typeof enquiry_id === 'undefined' || typeof base_path === 'undefined') return;
-    var data = getSheetDataForSave(api);
+    var payload = serializeSheetData(api);
     $.ajax({
       method: 'POST',
       url: base_path + 'WorkInProcess/saveAssortmentDesignSheetData',
       dataType: 'json',
       data: {
         enquiry_id: enquiry_id,
-        sheet_data: JSON.stringify(data)
+        sheet_data: JSON.stringify(payload)
       },
       success: function (res) {
         if (res && res.status === 'success') {
